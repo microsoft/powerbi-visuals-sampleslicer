@@ -1,0 +1,36 @@
+{
+  "visual": {
+    "name": "sampleSlicer",
+    "displayName": "SampleSlicer",
+    "guid": "SampleSlicer1448559807355",
+    "visualClassName": "SampleSlicer",
+    "version": "1.0.0",
+    "description": "Use this slicer to select discrete numeric categories or range of numeric category values.",
+    "supportUrl": "http://community.powerbi.com",
+    "gitHubUrl": "https://github.com/Microsoft/powerbi-visuals-sampleslicer"
+  },
+  "apiVersion": "1.7.0",
+  "author": {
+    "name": "Microsoft"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": [
+    "node_modules/jquery/dist/jquery.min.js",
+    "node_modules/nouislider/distribute/nouislider.js",
+    "node_modules/d3/d3.min.js",
+    "node_modules/lodash/lodash.min.js",
+    "node_modules/globalize/lib/globalize.js",
+    "node_modules/globalize/lib/cultures/globalize.culture.en-US.js",
+    "node_modules/powerbi-visuals-utils-dataviewutils/lib/index.js",
+    "node_modules/powerbi-visuals-utils-typeutils/lib/index.js",
+    "node_modules/powerbi-visuals-utils-svgutils/lib/index.js",
+    "node_modules/powerbi-visuals-utils-formattingutils/lib/index.js",
+    "node_modules/powerbi-visuals-utils-interactivityutils/lib/index.js",
+    "node_modules/powerbi-visuals-utils-colorutils/lib/index.js",
+    "node_modules/powerbi-models/dist/models.js"
+  ],
+  "style": "style/sampleSlicer.less",
+  "capabilities": "capabilities.json"
+}

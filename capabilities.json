@@ -1,0 +1,331 @@
+{
+    "dataRoles": [
+        {
+            "displayName": "Numeric field",
+            "name": "Category",
+            "kind": "Grouping"
+        }
+    ],
+    "dataViewMappings": [
+        {
+            "conditions": [
+                {
+                    "Category": {
+                        "max": 1
+                    }
+                }
+            ],
+            "categorical": {
+                "categories": {
+                    "for": {
+                        "in": "Category"
+                    },
+                    "dataReductionAlgorithm": {
+                        "top": {
+                            "count": 10000
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "objects": {
+        "general": {
+            "displayName": "General",
+            "displayNameKey": "formattingGeneral",
+            "properties": {
+                "selection": {
+                    "displayName": "Selection",
+                    "type": {
+                        "text": true
+                    }
+                },
+                "columns": {
+                    "displayName": "Columns",
+                    "displayNameKey": "formattingGeneralColumns",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "rows": {
+                    "displayName": "Rows",
+                    "displayNameKey": "formattingGeneralRows",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "selected": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "filter": {
+                    "type": {
+                        "filter": true
+                    }
+                },
+                "selfFilter": {
+                    "type": {
+                        "filter": {
+                            "selfFilter": true
+                        }
+                    }
+                },
+                "selfFilterEnabled": {
+                    "type": {
+                        "operations": {
+                            "searchEnabled": true
+                        }
+                    }
+                }
+            }
+        },
+        "header": {
+            "displayName": "Header",
+            "displayNameKey": "formattingHeader",
+            "properties": {
+                "show": {
+                    "displayName": "Show",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "title": {
+                    "displayName": "Title",
+                    "displayNameKey": "formattingHeaderTitle",
+                    "type": {
+                        "text": true
+                    }
+                },
+                "fontColor": {
+                    "displayName": "Font color",
+                    "displayNameKey": "formattingHeaderFontColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "background": {
+                    "displayName": "Background",
+                    "displayNameKey": "formattingHeaderBackground",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "textSize": {
+                    "displayName": "Text Size",
+                    "displayNameKey": "formattingHeaderTextSize",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "outlineColor": {
+                    "displayName": "Outline Color",
+                    "displayNameKey": "formattingHeaderOutlineColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "outlineWeight": {
+                    "displayName": "Outline Weight",
+                    "displayNameKey": "formattingHeaderOutlineWeight",
+                    "type": {
+                        "numeric": true
+                    }
+                }
+            }
+        },
+        "rows": {
+            "displayName": "Samples",
+            "displayNameKey": "formattingSamples",
+            "properties": {
+                "fontColor": {
+                    "displayName": "Text color",
+                    "displayNameKey": "formattingSamplesTextColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "textSize": {
+                    "displayName": "Text Size",
+                    "displayNameKey": "formattingSamplesTextSize",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "height": {
+                    "displayName": "Height",
+                    "displayNameKey": "formattingSamplesHeight",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "width": {
+                    "displayName": "Width",
+                    "displayNameKey": "formattingSamplesWidth",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "selectedColor": {
+                    "displayName": "Selected Color",
+                    "displayNameKey": "formattingSamplesSelectedColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "hoverColor": {
+                    "displayName": "Hover Color",
+                    "displayNameKey": "formattingSamplesHoverColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "unselectedColor": {
+                    "displayName": "Unselected Color",
+                    "displayNameKey": "formattingSamplesUnselectedColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "disabledColor": {
+                    "displayName": "Disabled Color",
+                    "displayNameKey": "formattingSamplesDisabledColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "background": {
+                    "displayName": "Background",
+                    "displayNameKey": "formattingSamplesBackground",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "transparency": {
+                    "displayName": "Transparency",
+                    "displayNameKey": "formattingSamplesTransparancy",
+                    "description": "Set transparency for background color",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "outlineColor": {
+                    "displayName": "Outline Color",
+                    "displayNameKey": "formattingSamplesOutlineColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "outlineWeight": {
+                    "displayName": "Outline Weight",
+                    "displayNameKey": "formattingSamplesOutlineWeight",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "padding": {
+                    "displayName": "Padding",
+                    "displayNameKey": "formattingSamplesPadding",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "borderStyle": {
+                    "displayName": "Outline Style",
+                    "displayNameKey": "formattingSamplesOutlineStyle",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "Rounded",
+                                "displayNameKey": "formattingSamplesOutlineStyleRounded",
+                                "displayName": "Rounded"
+                            },
+                            {
+                                "value": "Cut",
+                                "displayNameKey": "formattingSamplesOutlineStyleCut",
+                                "displayName": "Cut"
+                            },
+                            {
+                                "value": "Square",
+                                "displayNameKey": "formattingSamplesOutlineStyleSquare",
+                                "displayName": "Square"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "images": {
+            "displayName": "Images",
+            "displayNameKey": "formattingImages",
+            "properties": {
+                "imageSplit": {
+                    "displayName": "Image Split",
+                    "displayNameKey": "formattingImagesSplit",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "stretchImage": {
+                    "displayName": "Stretch image",
+                    "displayNameKey": "formattingImagesStrech",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "bottomImage": {
+                    "displayName": "Bottom image",
+                    "displayNameKey": "formattingImagesBottom",
+                    "type": {
+                        "bool": true
+                    }
+                }
+            }
+        }
+    },
+    "supportsHighlight": true,
+    "suppressDefaultTitle": true,
+    "sorting": {
+        "default": {}
+    }
+}

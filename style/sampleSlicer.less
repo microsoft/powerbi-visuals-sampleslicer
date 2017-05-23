@@ -1,0 +1,495 @@
+/*
+ *  Power BI Visualizations
+ *
+ *  Copyright (c) Microsoft Corporation
+ *  All rights reserved.
+ *  MIT License
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the ""Software""), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in
+ *  all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
+ */
+
+/**
+ * Imports external styles.
+ * We compile it as a less file in order to wrap the external CSS rules.
+ */
+@import (less) "node_modules/powerbi-visuals-utils-interactivityutils/lib/index.css";
+@import (less) "node_modules/powerbi-visuals-utils-formattingutils/lib/index.css";
+@import (less) "node_modules/nouislider/distribute/nouislider.min.css";
+
+/* NEUTRAL COLORS */
+@blackColor: #000;
+@neutralDarkColor: #212121;
+@neutralPrimaryColor: #333333;
+@neutralPrimaryColorAlt: #444444;
+@neutralPrimaryColorAlt2: #4a4a4a;
+@neutralPrimaryColorAlt3: #515151;
+@neutralSecondaryColor: #666666;
+@neutralSecondaryAltColor: #777777;
+@neutralSecondaryAltColor2: #888888;
+@neutralSecondaryAltColor3: #999999;
+@neutralTertiaryColor: #A6A6A6;
+@neutralTertiaryAltColor: #C8C8C8;
+@neutralLightColor: #EAEAEA;
+@neutralLighterColor: #F4F4F4;
+@whiteColor: #FFF;
+
+/* THEME COLORS */
+@themePrimaryColor: #F2C811;
+@themeDarkColor: #CDA521;
+@themeDarkerColor: #BE9A27;
+@themeSecondaryColor: #000000;
+@themeSecondaryAltColor: #444444;
+@themeTertiaryColor: #F2C811;
+@themeLightColor: #F2C811;
+@themeLighterColor: #F2C811;
+
+/*@neutralDarkColor: '#212121';
+@neutralPrimaryColor: '#333333';*/
+@regularFontFamily: helvetica, arial, sans-serif;
+
+
+    .date-slicer {
+        // Constants
+        @handlerHeight: 17px;
+        @connectHeight: 3px;
+        @handlerWidth: 5px;
+        @handlerTop: (@handlerHeight - @connectHeight) / 2;
+
+        width: 100%;
+        position: relative;
+        box-sizing: border-box;
+
+        .date-slicer-head {
+            padding: 5px 6px 7px 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            overflow: hidden;
+
+            .date-slicer-select {
+                width: 100px;
+                margin-top: 5px;
+                margin-bottom: 10px;
+                outline: none;
+            }
+
+            .date-slicer-range {
+                display: flex;
+                flex-grow: 0;
+                flex-direction: row;
+                justify-content: flex-start;
+                margin-top: -5px;
+                margin-left: -6px;
+
+                .date-slicer-control {
+                    position: relative;
+                    margin-top: 5px;
+                    margin-left: 6px;
+
+                    .date-slicer-input {
+                        box-sizing: border-box;
+                        width: 6.16em;
+                        height: 2.16em;
+                        padding: 0 0 0 0.5em;
+                        font-size: inherit;
+                        border: 1px solid @neutralLightColor;
+                        background-color: transparent;
+                        transition: border 250ms;
+                        opacity: 1;
+
+                        &:hover:enabled {
+                            border-color: @neutralSecondaryColor;
+                        }
+
+                        &:active:enabled, &:focus:enabled {
+                            border-color: @themePrimaryColor;
+                        }
+                    }
+                }
+            }
+        }
+
+        .date-slicer-slider {
+            height: (@handlerHeight - @handlerTop);
+            margin: @handlerTop 8px 0px 8px;
+
+            .noUi-state-tap .noUi-origin {
+                -webkit-transition: left 0.3s, top 0.3s;
+                transition: left 0.3s, top 0.3s;
+            }
+        }
+
+
+
+        
+/*
+        .noUi-base {
+            cursor: default;
+        }
+
+        .noUi-target {
+            box-shadow: none;
+            border: none;
+        }
+
+        .noUi-connect {
+            background-color: @neutralLightColor;
+            box-shadow: none;
+            border: none;
+        }
+
+        .noUi-background {
+            background-color: @neutralLightColor;
+            box-shadow: none;
+            border-radius: 0px;
+            border: none;
+        }
+
+        .noUi-origin {
+            right: -@handlerWidth / 2;
+        }
+
+        .noUi-horizontal {
+            height: @connectHeight;
+        }
+
+        .noUi-horizontal {
+            padding-right: @handlerWidth / 2;
+        }
+
+        .noUi-handle {
+            width: @handlerWidth;
+            height: @handlerHeight;
+            background-color: @neutralSecondaryColor;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            box-shadow: none;
+            top: -@handlerTop;
+            left: 0px;
+            transition: background-color 150ms;
+        }
+        // creates invisible touch area.
+        .noUi-handle::after {
+            height: 24px;
+            width: 16px;
+            background-color: transparent;
+            left: -6px;
+            top: -2px;
+            position: absolute;
+            content: "";
+            cursor: pointer;
+            z-index: -1;
+        }*/
+
+        .ui-selectmenu-button {
+            outline: none;
+        }
+    }
+
+.sampleSlicer {
+    font-family: @regularFontFamily;
+    padding: 5px 6px 7px 8px;
+    .clear {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAOCAMAAADHVLbdAAAAZlBMVEUAAADq6urp6enBwcHV1dWfn5+zs7O/v7/l5eWZmZmioqKjo6OlpaWmpqanp6eurq6vr6+xsbGzs7O2tra3t7e4uLi6urq9vb3Dw8PGxsbJycnMzMzNzc3Ozs7Pz8/Q0NDR0dH///9091kCAAAACXRSTlMARGaZmd3d3e7y4Z+JAAAAX0lEQVQIW3XI1xJAMBSE4dWiHUSJRPf+TymFCRf2Ymf+D/iZWr85sv2dAuAeZmGen5/UELtsbp+sby1lzgfzBwOq0CSzmpirQywuEUl9AanOJSBTfYo/qaEkygvqvfhdpMwD2G4l8pMAAAAASUVORK5CYII=);
+
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        width: 13px;
+        height: 12px;
+        margin: 4px 2px;
+        float: right;
+        cursor: pointer;
+    }
+
+    .searchToggle {
+        width: 13px;
+        height: 12px;
+        margin: 4px 2px;
+        float: right;
+        cursor: pointer;
+
+        background-size: cover;
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAMAAAAMs7fIAAAAk1BMVEUAAACnVx///+8AAAAAFycXAAAXJ1cfAAAfHx8fb78vX68/X4c/b6dHj89Xn9dXp99fF2dfL49fPydfPzdnt+9vPx9vv/eHx/+PRx+Pv+enVx+n3/+v1++3ZwC3Zx+3Z0+37//HhwDPjyfPjy/P7/fP///Xr4ffnz/nz6fvz6f3v3f/z4//76//98///9///+/////atKXiAAAAA3RSTlMA3d02gtHlAAAAbUlEQVR4AWOAATVhdmY2SQY40JXgUWFg0BDlhQnoSfFDaRGoiBYnlKEjqAphKItBRfTlpSEMRXEIjWCpi8DUyEJFtLlg5ggoQBhMcvwIOyEsRg6QezRF+RDO0VcTYmXhlkEIQFnkCzAoAQUIAADDFQhfMTPyzwAAAABJRU5ErkJggg==);
+    }
+
+    .row {
+      white-space: nowrap;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .slicerBody {
+        .cell {
+            box-sizing: border-box;
+            padding: 2px 5px;
+
+            display: inline-block;
+
+            position: relative;
+            cursor: pointer;
+            width: 100%;
+            float: left;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+            display: inline;
+        }
+
+        li.slicerItemContainer {
+            height: 100%;
+            width: 100%;
+            padding: 2px;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-content: center;
+            align-items: stretch;
+            box-sizing: border-box;
+            border: 1px solid @neutralLightColor;
+            border-radius: 5px;
+
+            &:hover {
+                border-color: @neutralDarkColor;
+            }
+
+            .slicer-text-wrapper {
+                box-sizing: border-box;
+                text-align: center;
+                order: 0;
+                align-self: auto;
+                flex-grow: 1;
+                flex-shrink: 1;
+                flex-basis: auto;
+                display: flex;
+                flex-direction: column;
+                flex-wrap: nowrap;
+                justify-content: center;
+                align-content: center;
+                align-items: stretch;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .slicer-img-wrapper {
+                max-width: 100%;
+                height: auto;
+                align-self: center;
+            }
+
+            .stretchImage {
+                align-self: auto;
+            }
+
+            .bottomImage {
+                order: 1;
+            }
+
+            .slicerItem-disabled {
+                opacity: 0.4;
+                color: #fff !important;
+            }
+        }
+
+        &.slicerBody-vertical {
+            .cell {
+                clear: both;
+            }
+
+            .row {
+                float: left;
+            }
+        }
+    }
+
+    .slicerItemContainer.selected {
+        background: #BDD7EE;
+    }
+
+    .row-horizontal {
+        display: inline-block;
+    }
+
+    .slicerText,
+    .slicerContainer .slicerText {
+        line-height: 20px;
+    }
+
+    .searchHeader {
+        overflow: hidden;
+
+        &.collapsed {
+            display: none;
+        }
+
+        &.show {
+            display: -webkit-box; // IOS 6-, Safari
+            display: flex; // Opera, Firefox
+            justify-content: space-between;
+            -webkit-align-items: center;
+            border: 1px solid @neutralLightColor;
+            background-color: transparent;
+            transition: border 250ms;
+            opacity: 1;
+
+            height: 20px;
+        }
+
+
+        &:hover {
+            border-color: @neutralDarkColor;
+        }
+
+        &:active:enabled, &:focus:enabled {
+            border-color: @themePrimaryColor;
+        }
+
+        .search {
+            cursor: pointer;
+            margin: 1px 4px;
+            color: @neutralDarkColor;
+            width: 17px;
+            height: 17px;
+            background-size: cover;
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAMAAAAMs7fIAAAAk1BMVEUAAACnVx///+8AAAAAFycXAAAXJ1cfAAAfHx8fb78vX68/X4c/b6dHj89Xn9dXp99fF2dfL49fPydfPzdnt+9vPx9vv/eHx/+PRx+Pv+enVx+n3/+v1++3ZwC3Zx+3Z0+37//HhwDPjyfPjy/P7/fP///Xr4ffnz/nz6fvz6f3v3f/z4//76//98///9///+/////atKXiAAAAA3RSTlMA3d02gtHlAAAAbUlEQVR4AWOAATVhdmY2SQY40JXgUWFg0BDlhQnoSfFDaRGoiBYnlKEjqAphKItBRfTlpSEMRXEIjWCpi8DUyEJFtLlg5ggoQBhMcvwIOyEsRg6QezRF+RDO0VcTYmXhlkEIQFnkCzAoAQUIAADDFQhfMTPyzwAAAABJRU5ErkJggg==);
+        }
+
+        input {
+            color: @neutralPrimaryColor;
+            cursor: auto;
+            align-self: center;
+            flex: 1 1 0px;
+            -webkit-flex: 1 1 0px;
+            border-style:none;
+            min-width: 0px;
+            padding: 0; // Override parent style
+
+            &:focus {
+                outline-width: 0;
+            }
+        }
+    }
+}
+
+/// Height of the slider's handle
+/// @type String
+@control-height: 15px;
+/// Width of the slider's handle
+/// @type String
+@control-width: 6px;
+/// Color of the slider's handle
+/// @type Color
+@control-color: rgb(55,55,55);
+/// Size of the slider handle's text
+/// @type String
+@control-font-size: 18px;
+/// Font Weight of the slider handle's text
+/// @type String
+@control-font-weight: 100;
+/// Color of the slider's "fill" when connected
+/// @type Color
+@fill-color: @neutralLightColor;//darken(@control-color, 10%);
+/// Height of the slider's gutter
+/// @type String
+@gutter-height: 4px;
+
+
+/// noUiSlider Gutter
+.noUi-background {
+  height: @gutter-height;
+  &.noUi-vertical {
+    height: 200px;
+    width: @gutter-height;
+    margin: 0 auto 30px;
+  }
+}
+
+.noUi-target {
+    border: 0px;
+    box-shadow:none;
+    background:transparent;
+
+.noUi-base {
+    background-color: @neutralLightColor;
+    height: 2px;
+
+  .noUi-connect {
+    background-color: @neutralLightColor;
+    height: 4px;
+  }
+  /// noUiSlider Handle
+  .noUi-handle {
+    background-color: @control-color;
+    border: none;
+    border-radius: 6px;
+    box-shadow: none;
+    color: #FFFFFF;
+    display: table;
+    font-size: 15px;
+    height: @control-height;
+    left: 0;
+    margin-left: -3px;
+    margin-top: -(@control-height/2) + @gutter-height/2 - 1;
+    padding: 0;
+    position: absolute;
+    text-align: center;
+    top: 0;
+    width: @control-width;
+    z-index: 2;
+    
+    .noUi-horizontal & {
+      cursor: ew-resize;
+    }
+    
+    .noUi-vertical & {
+      cursor: ns-resize;
+      margin-left: -(@control-width/2) + @gutter-height/2;
+    }
+    
+    &:hover {
+      background-color: lighten(@control-color, 10%);
+    }
+    
+    &.noUi-active {
+      background-color: darken(@control-color, 10%);
+      z-index: 3;
+    }
+
+    &::before {
+      background: transparent;
+      content: attr(data-value);
+      display: table-cell;
+      font-size: @control-font-size;
+      font-weight: @control-font-weight;
+      position: static;
+      width: 100%;
+      vertical-align: middle;
+    }
+    &::after {
+      display: none;
+    }
+  }
+}
+}
