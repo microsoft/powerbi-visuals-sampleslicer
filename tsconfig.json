@@ -19,7 +19,6 @@
     "node_modules/powerbi-visuals-utils-colorutils/lib/index.d.ts",
 	"node_modules/powerbi-models/dist/models-noexports.d.ts",
 	"typings/modules/nouislider/index.d.ts",
-    "src/sampleSlicerProps.ts",
     "src/sampleSlicerSettings.ts",
     "src/converter.ts",
     "src/tableView.ts",

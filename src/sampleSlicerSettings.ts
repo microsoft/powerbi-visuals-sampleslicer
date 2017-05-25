@@ -30,10 +30,13 @@ module powerbi.extensibility.visual {
         general: {
             columns: number;
             rows: number;
+            rangeSelectionStart: string;
+            rangeSelectionEnd: string;
             multiselect: boolean;
             selection: string;
             getPersistedSelectionState?: () => powerbi.extensibility.ISelectionId[];
             persistSelectionState?: (selectionIds: string[]) => void;
+            applyPersistedRangeSelectionState?: () => void;
             clearRangeSelection?: () => void;
             removeSavedSelection?: () => void;
         };
@@ -56,12 +59,14 @@ module powerbi.extensibility.visual {
             marginTop: number;
             marginLeft: number;
         };
-    }
+    };
 
-    export let defaultStyleSettings: SampleSlicerSettings = {
+    export let defaultSettings: SampleSlicerSettings = {
         general: {
             columns: 3,
             rows: 0,
+            rangeSelectionStart: null,
+            rangeSelectionEnd: null,
             multiselect: true,
             selection: null
         },
@@ -83,6 +88,15 @@ module powerbi.extensibility.visual {
         slicerItemContainer: {
             marginTop: 5,
             marginLeft: 0,
+        }
+    };
+
+    export let persistedSettingsDataViewObjectPropertyIdentifiers = {
+        general: {
+            multiselect: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'multiselect' },
+            selection: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'selection' }, 
+            rangeSelectionStart: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'rangeSelectionStart' },
+            rangeSelectionEnd: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'rangeSelectionEnd' }
         }
     };
 

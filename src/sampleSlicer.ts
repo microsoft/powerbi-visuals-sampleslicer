@@ -163,6 +163,13 @@ module powerbi.extensibility.visual {
             let converter: SampleSlicerConverter = new SampleSlicerConverter(dataView, visualHost);
             converter.convert(scalableRange);
 
+            let slicerSettings: SampleSlicerSettings = defaultSettings;
+            if (dataView.metadata.objects) {
+                slicerSettings.general.selection = DataViewObjectsModule.getValue(dataView.metadata.objects, persistedSettingsDataViewObjectPropertyIdentifiers.general.selection, defaultSettings.general.selection);
+                slicerSettings.general.rangeSelectionStart = DataViewObjectsModule.getValue(dataView.metadata.objects, persistedSettingsDataViewObjectPropertyIdentifiers.general.rangeSelectionStart, defaultSettings.general.selection);
+                slicerSettings.general.rangeSelectionEnd = DataViewObjectsModule.getValue(dataView.metadata.objects, persistedSettingsDataViewObjectPropertyIdentifiers.general.rangeSelectionEnd, defaultSettings.general.selection);
+            }
+
             if (searchText) {
                 searchText = searchText.toLowerCase();
                 converter.dataPoints.forEach(x => x.filtered = x.category.toLowerCase().indexOf(searchText) != 0);
@@ -174,7 +181,7 @@ module powerbi.extensibility.visual {
             slicerData = {
                 categorySourceName: categories.source.displayName,
                 formatString: valueFormatter.getFormatStringByColumn(categories.source),
-                slicerSettings: defaultStyleSettings,
+                slicerSettings: slicerSettings,
                 slicerDataPoints: converter.dataPoints
             };
 
@@ -189,16 +196,11 @@ module powerbi.extensibility.visual {
             this.behavior = new SampleSlicerWebBehavior();
             this.interactivityService = createInteractivityService(options.host);
 
-            this.settings = defaultStyleSettings;
+            this.settings = defaultSettings;
 
             this.scalableRange = new ScalableRange();
 
             Object.defineProperty(window, "pageXOffset", {
-                get: function () {
-                    return window.window.pageXOffset;
-                }
-            })
-            Object.defineProperty(window, "pageYOffset", {
                 get: function () {
                     return window.window.pageXOffset;
                 }
@@ -360,13 +362,15 @@ module powerbi.extensibility.visual {
 
 
             data.slicerSettings.general.persistSelectionState = (selectionIds: string[]): void => {
-
+                debugger;
                 this.visualHost.persistProperties(<VisualObjectInstancesToPersist>{
                     merge: [{
                         objectName: "general",
                         selector: null,
                         properties: {
-                            selection: selectionIds && JSON.stringify(selectionIds) || ""
+                            selection: selectionIds && JSON.stringify(selectionIds) || "",
+                            rangeSelectionStart: this.$start.val(),
+                            rangeSelectionEnd: this.$end.val()
                         }
                     }]
                 });
@@ -374,10 +378,20 @@ module powerbi.extensibility.visual {
                 this.isSelectionSaved = true;
             };
 
-
-
             data.slicerSettings.general.clearRangeSelection = (): void => {
                 this.scalableRange = new ScalableRange();
+            }
+
+            data.slicerSettings.general.applyPersistedRangeSelectionState = (): void => {
+                debugger;
+                if (this.slicerData.slicerSettings.general.rangeSelectionStart != null) {
+                    this.$start.val(this.slicerData.slicerSettings.general.rangeSelectionStart);
+                    this.onRangeInputTextboxChange(this.slicerData.slicerSettings.general.rangeSelectionStart, RangeValueType.Start);
+                }
+                if (this.slicerData.slicerSettings.general.rangeSelectionEnd != null) {
+                    this.$end.val(this.slicerData.slicerSettings.general.rangeSelectionEnd);
+                    this.onRangeInputTextboxChange(this.slicerData.slicerSettings.general.rangeSelectionEnd, RangeValueType.End);
+                }
             }
 
             if (this.slicerData) {
@@ -593,7 +607,7 @@ module powerbi.extensibility.visual {
                 this.$sliderElement = $('<div/>')
                     .appendTo($sliderContainer);
                 (<any>window).noUiSlider.create(this.$sliderElement.get(0), this.createSliderOptions());
-                
+
                 this.slider = (<noUiSlider.Instance>this.$sliderElement.get(0)).noUiSlider;
 
                 //populate slider event handlers 

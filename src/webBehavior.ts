@@ -120,7 +120,7 @@ module powerbi.extensibility.visual {
 
                 /* send selection state to the host */
                 this.selectionHandler.applySelectionFilter();
-            }
+            } 
         }
 
         public persistSelectionState(): void {
