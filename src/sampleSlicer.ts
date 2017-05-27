@@ -362,15 +362,14 @@ module powerbi.extensibility.visual {
 
 
             data.slicerSettings.general.persistSelectionState = (selectionIds: string[]): void => {
-                debugger;
                 this.visualHost.persistProperties(<VisualObjectInstancesToPersist>{
                     merge: [{
                         objectName: "general",
                         selector: null,
                         properties: {
                             selection: selectionIds && JSON.stringify(selectionIds) || "",
-                            rangeSelectionStart: this.$start.val(),
-                            rangeSelectionEnd: this.$end.val()
+                            rangeSelectionStart: this.scalableRange.getValue().min,
+                            rangeSelectionEnd: this.scalableRange.getValue().max
                         }
                     }]
                 });
@@ -383,7 +382,6 @@ module powerbi.extensibility.visual {
             }
 
             data.slicerSettings.general.applyPersistedRangeSelectionState = (): void => {
-                debugger;
                 if (this.slicerData.slicerSettings.general.rangeSelectionStart != null) {
                     this.$start.val(this.slicerData.slicerSettings.general.rangeSelectionStart);
                     this.onRangeInputTextboxChange(this.slicerData.slicerSettings.general.rangeSelectionStart, RangeValueType.Start);
@@ -640,6 +638,9 @@ module powerbi.extensibility.visual {
                 inputValue = null;
             } else {
                 inputValue = parseFloat(inputString);
+                if (isNaN(inputValue)){
+                    inputValue = null; 
+                }
             }
 
             //apply input
@@ -657,7 +658,7 @@ module powerbi.extensibility.visual {
         }
 
         private onRangeChange(): void {
-            this.behavior.clearAllSelections();
+            this.behavior.clearAllDiscreteSelections();
             this.applyRangeFilter(this.scalableRange.getValue());
         }
 

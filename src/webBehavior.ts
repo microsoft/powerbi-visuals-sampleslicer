@@ -86,7 +86,7 @@ module powerbi.extensibility.visual {
 
         }
 
-        public clearAllSelections() {
+        public clearAllDiscreteSelections() {
 
             /* update state to clear all selections */
             this.selectionHandler.handleClearSelection();
@@ -120,7 +120,9 @@ module powerbi.extensibility.visual {
 
                 /* send selection state to the host */
                 this.selectionHandler.applySelectionFilter();
-            } 
+            } else {
+                this.slicerSettings.general.applyPersistedRangeSelectionState();
+            }
         }
 
         public persistSelectionState(): void {
