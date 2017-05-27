@@ -205,6 +205,12 @@ module powerbi.extensibility.visual {
                     return window.window.pageXOffset;
                 }
             })
+
+            Object.defineProperty(window, "pageYOffset", {
+                get: function () {
+                    return window.window.pageYOffset;
+                }
+            })
         }
 
         public update(options: VisualUpdateOptions) {
@@ -638,8 +644,8 @@ module powerbi.extensibility.visual {
                 inputValue = null;
             } else {
                 inputValue = parseFloat(inputString);
-                if (isNaN(inputValue)){
-                    inputValue = null; 
+                if (isNaN(inputValue)) {
+                    inputValue = null;
                 }
             }
 
