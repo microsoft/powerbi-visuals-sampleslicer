@@ -374,8 +374,8 @@ module powerbi.extensibility.visual {
                         selector: null,
                         properties: {
                             selection: selectionIds && JSON.stringify(selectionIds) || "",
-                            rangeSelectionStart: this.scalableRange.getValue().min,
-                            rangeSelectionEnd: this.scalableRange.getValue().max
+                            rangeSelectionStart: this.formatValue(this.scalableRange.getValue().min),
+                            rangeSelectionEnd: this.formatValue(this.scalableRange.getValue().max)
                         }
                     }]
                 });
