@@ -368,7 +368,6 @@ module powerbi.extensibility.visual {
 
 
             data.slicerSettings.general.persistSelectionState = (selectionIds: string[]): void => {
-                debugger;
                 this.visualHost.persistProperties(<VisualObjectInstancesToPersist>{
                     merge: [{
                         objectName: "general",
@@ -389,13 +388,16 @@ module powerbi.extensibility.visual {
             }
 
             data.slicerSettings.general.applyPersistedRangeSelectionState = (): void => {
-                if (this.slicerData.slicerSettings.general.rangeSelectionStart != null) {
-                    this.$start.val(this.slicerData.slicerSettings.general.rangeSelectionStart);
-                    this.onRangeInputTextboxChange(this.slicerData.slicerSettings.general.rangeSelectionStart, RangeValueType.Start);
+                let rangeSelectionStart: string = JSON.parse(this.slicerData.slicerSettings.general.rangeSelectionStart);
+                let rangeSelectionEnd: string = JSON.parse(this.slicerData.slicerSettings.general.rangeSelectionEnd);
+
+                if (rangeSelectionStart) {
+                    this.$start.val(rangeSelectionStart);
+                    this.onRangeInputTextboxChange(rangeSelectionStart, RangeValueType.Start);
                 }
-                if (this.slicerData.slicerSettings.general.rangeSelectionEnd != null) {
-                    this.$end.val(this.slicerData.slicerSettings.general.rangeSelectionEnd);
-                    this.onRangeInputTextboxChange(this.slicerData.slicerSettings.general.rangeSelectionEnd, RangeValueType.End);
+                if (rangeSelectionEnd) {
+                    this.$end.val(rangeSelectionEnd);
+                    this.onRangeInputTextboxChange(rangeSelectionEnd, RangeValueType.End);
                 }
             }
 
