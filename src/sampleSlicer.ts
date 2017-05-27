@@ -368,14 +368,15 @@ module powerbi.extensibility.visual {
 
 
             data.slicerSettings.general.persistSelectionState = (selectionIds: string[]): void => {
+                debugger;
                 this.visualHost.persistProperties(<VisualObjectInstancesToPersist>{
                     merge: [{
                         objectName: "general",
                         selector: null,
                         properties: {
                             selection: selectionIds && JSON.stringify(selectionIds) || "",
-                            rangeSelectionStart: this.formatValue(this.scalableRange.getValue().min),
-                            rangeSelectionEnd: this.formatValue(this.scalableRange.getValue().max)
+                            rangeSelectionStart: JSON.stringify(this.formatValue(this.scalableRange.getValue().min)),
+                            rangeSelectionEnd: JSON.stringify(this.formatValue(this.scalableRange.getValue().max))
                         }
                     }]
                 });

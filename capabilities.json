@@ -54,12 +54,12 @@
                 },
                 "rangeSelectionStart": {
                     "type": {
-                        "numeric": true
+                        "text": true
                     }
                 },
                 "rangeSelectionEnd": {
                     "type": {
-                        "numeric": true
+                        "text": true
                     }
                 }                                     
             }
