@@ -300,32 +300,11 @@ module powerbi.extensibility.visual {
             }
 
             switch (options.objectName) {
-                case 'rows':
-                    return this.enumerateRows(data);
                 case 'general':
                     return this.enumerateGeneral(data);
                 default:
                     return [];
             }
-        }
-
-        private enumerateRows(data: SampleSlicerData): VisualObjectInstance[] {
-            let slicerSettings: SampleSlicerSettings = this.settings;
-
-            return [{
-                selector: null,
-                objectName: 'rows',
-                properties: {
-                    textSize: slicerSettings.slicerText.textSize,
-                    height: slicerSettings.slicerText.height,
-                    width: slicerSettings.slicerText.width,
-                    transparency: slicerSettings.slicerText.transparency,
-                    selectedColor: slicerSettings.slicerText.selectedColor,
-                    hoverColor: slicerSettings.slicerText.hoverColor,
-                    unselectedColor: slicerSettings.slicerText.unselectedColor,
-                    padding: slicerSettings.slicerText.padding
-                }
-            }];
         }
 
         private enumerateGeneral(data: SampleSlicerData): VisualObjectInstance[] {
@@ -415,6 +394,10 @@ module powerbi.extensibility.visual {
             this.settings = this.slicerData.slicerSettings;
 
             let height: number = this.settings.slicerText.height;
+
+            this.slicerBody.style({
+                    'height': (this.currentViewport.height - 120) + "px"
+                });
 
             //update tableView and render it  
             this.tableView
@@ -514,7 +497,6 @@ module powerbi.extensibility.visual {
                     'height': (slicerBodyViewport.height - 120) + "px"
                 });
 
-
             let rowEnter = (rowSelection: Selection<any>) => {
                 this.enterSelection(rowSelection);
             };
@@ -558,13 +540,9 @@ module powerbi.extensibility.visual {
                 }
             });
 
-            // We need the input to show formatted string when not in focus and show the actual filter value when in foucs.
             this.$start.on("focus", (event: JQueryEventObject) => {
                 this.$start.val(this.formatValue(this.scalableRange.getValue().min));
                 this.$start.select();
-            });
-            this.$start.on("blur", (event: JQueryEventObject) => {
-                this.$start.val(this.formatValue(this.scalableRange.getValue().min));
             });
 
             this.$end.on("change", (event: JQueryEventObject) => {
@@ -579,13 +557,9 @@ module powerbi.extensibility.visual {
                 }
             });
 
-            // We need the input to show formatted string when not in focus and show the actual filter value when in foucs.
             this.$end.on("focus", (event: JQueryEventObject) => {
                 this.$end.val(this.formatValue(this.scalableRange.getValue().max));
                 this.$end.select();
-            });
-            this.$end.on("blur", (event: JQueryEventObject) => {
-                this.$end.val(this.formatValue(this.scalableRange.getValue().max));
             });
         }
 
@@ -893,6 +867,7 @@ module powerbi.extensibility.visual {
             let settings: SampleSlicerSettings = this.settings,
                 height: number = currentViewport.height,
                 width: number = currentViewport.width - SampleSlicer.WidthOfScrollbar;
+                debugger;
             return {
                 height: Math.max(height, SampleSlicer.MinSizeOfViewport),
                 width: Math.max(width, SampleSlicer.MinSizeOfViewport)

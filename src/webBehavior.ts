@@ -27,7 +27,6 @@
 module powerbi.extensibility.visual {
     // d3
     import Selection = d3.Selection;
-    import UpdateSelection = d3.selection.Update;
 
     // powerbi.extensibility.utils.interactivity
     import ISelectionHandler = powerbi.extensibility.utils.interactivity.ISelectionHandler;
@@ -49,11 +48,7 @@ module powerbi.extensibility.visual {
         private slicerSettings: SampleSlicerSettings;
         private options: SampleSlicerBehaviorOptions;
         private selectionHandler: ISelectionHandler;
-
-        /**
-         * Public for testability.
-         */
-        public dataPoints: SampleSlicerDataPoint[];
+        private dataPoints: SampleSlicerDataPoint[];
 
         public bindEvents(options: SampleSlicerBehaviorOptions, selectionHandler: ISelectionHandler): void {
             const slicers: Selection<SelectableDataPoint> = this.slicers = options.slicerItemContainers
@@ -86,16 +81,13 @@ module powerbi.extensibility.visual {
 
         }
 
-        public clearAllDiscreteSelections() {
+        public clearAllDiscreteSelections() { 
 
             /* update state to clear all selections */
             this.selectionHandler.handleClearSelection();
 
-            /* send selection state to the host*/
-            this.selectionHandler.applySelectionFilter();
-
             /*persiste selection state to properties */
-            this.persistSelectionState();
+            this.persistSelectionState();            
         }
 
 

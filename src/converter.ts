@@ -27,12 +27,11 @@
 module powerbi.extensibility.visual {
 
     export class SampleSlicerConverter {
+        public dataPoints: SampleSlicerDataPoint[];
+
         private dataViewCategorical: DataViewCategorical;
         private category: DataViewCategoryColumn;
         private categoryValues: any[];
-
-        public dataPoints: SampleSlicerDataPoint[];
-
         private host: IVisualHost;
 
         public constructor(dataView: DataView, host: IVisualHost) {
@@ -43,7 +42,6 @@ module powerbi.extensibility.visual {
                 this.category = dataViewCategorical.categories[0];
                 this.categoryValues = this.category.values;
             }
-
             this.dataPoints = [];
         }
 
@@ -51,8 +49,6 @@ module powerbi.extensibility.visual {
             this.dataPoints = [];
 
             if (this.categoryValues) {
-
-                //foreach category series element 
                 for (let categoryIndex: number = 0, categoryCount = this.categoryValues.length; categoryIndex < categoryCount; categoryIndex++) {
                     let categoryValue: any = this.categoryValues[categoryIndex];
 
@@ -68,12 +64,12 @@ module powerbi.extensibility.visual {
                         isSelectedRangePoint: scalableRange.isActive() && SampleSlicerConverter.isNumberWithingRange(categoryValue, scalableRange.getValue())
                     });
                 }
-            }
 
-            scalableRange.setScalingTransformationDomain({
-                min: d3.min(this.categoryValues),
-                max: d3.max(this.categoryValues),
-            });
+                scalableRange.setScalingTransformationDomain({
+                    min: d3.min(this.categoryValues),
+                    max: d3.max(this.categoryValues),
+                });
+            }
         }
 
         private static isNumberWithingRange(theNumber: number, subRange: ValueRange<number>): boolean {
