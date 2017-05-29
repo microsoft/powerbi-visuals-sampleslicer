@@ -61,7 +61,7 @@
 @regularFontFamily: helvetica, arial, sans-serif;
 
 
-    .date-slicer {
+    .numeric-range-slicer {
         // Constants
         @handlerHeight: 17px;
         @connectHeight: 3px;
@@ -72,21 +72,21 @@
         position: relative;
         box-sizing: border-box;
 
-        .date-slicer-head {
+        .numeric-range-slicer-head {
             padding: 5px 6px 7px 8px;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
             overflow: hidden;
 
-            .date-slicer-select {
+            .numeric-range-slicer-select {
                 width: 100px;
                 margin-top: 5px;
                 margin-bottom: 10px;
                 outline: none;
             }
 
-            .date-slicer-range {
+            .numeric-range-slicer-range {
                 display: flex;
                 flex-grow: 0;
                 flex-direction: row;
@@ -94,12 +94,12 @@
                 margin-top: -5px;
                 margin-left: -6px;
 
-                .date-slicer-control {
+                .numeric-range-slicer-control {
                     position: relative;
                     margin-top: 5px;
                     margin-left: 6px;
 
-                    .date-slicer-input {
+                    .numeric-range-slicer-input {
                         box-sizing: border-box;
                         width: 6.16em;
                         height: 2.16em;
@@ -122,7 +122,7 @@
             }
         }
 
-        .date-slicer-slider {
+        .numeric-range-slicer-slider {
             height: (@handlerHeight - @handlerTop);
             margin: @handlerTop 8px 0px 8px;
 

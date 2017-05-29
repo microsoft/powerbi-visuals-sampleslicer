@@ -112,18 +112,10 @@ module powerbi.extensibility.visual {
 
         public static DefaultFontFamily: string = "helvetica, arial, sans-serif";
         public static DefaultFontSizeInPt: number = 11;
-
-        private static СellTotalInnerPaddings: number = 8;
         private static СellTotalInnerBorders: number = 2;
         private static СhicletTotalInnerRightLeftPaddings: number = 14;
-
-        public static MaxTransparency: number = 100;
-
-        private static MaxCellPadding: number = 20;
-
         private static MinSizeOfViewport: number = 0;
         private static MinColumns: number = 1;
-
         private static WidthOfScrollbar: number = 17;
 
         public static ItemContainerSelector: ClassAndSelector = createClassAndSelector('slicerItemContainer');
@@ -138,12 +130,12 @@ module powerbi.extensibility.visual {
         public static InputSelector: ClassAndSelector = createClassAndSelector('slicerCheckbox');
         public static ClearSelector: ClassAndSelector = createClassAndSelector('clear');
         public static BodySelector: ClassAndSelector = createClassAndSelector('slicerBody');
-        public static RangeSlicerSelector: ClassAndSelector = createClassAndSelector('date-slicer');
-        public static RangeSlicerHeadSelector: ClassAndSelector = createClassAndSelector('date-slicer-head');
-        public static RangeSlicerControlsSelector: ClassAndSelector = createClassAndSelector('date-slicer-range');
-        public static RangeSlicerSliderSelector: ClassAndSelector = createClassAndSelector('date-slicer-slider');
-        public static RangeSlicerControlSelector: ClassAndSelector = createClassAndSelector('date-slicer-control');
-        public static InputClass: ClassAndSelector = createClassAndSelector('date-slicer-input');
+        public static RangeSlicerSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer');
+        public static RangeSlicerHeadSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-head');
+        public static RangeSlicerControlsSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-range');
+        public static RangeSlicerSliderSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-slider');
+        public static RangeSlicerControlSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-control');
+        public static InputClass: ClassAndSelector = createClassAndSelector('numeric-range-slicer-input');
 
         public static converter(
             dataView: DataView,
