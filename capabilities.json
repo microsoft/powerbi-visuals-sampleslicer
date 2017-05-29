@@ -1,0 +1,73 @@
+{
+    "dataRoles": [
+        {
+            "displayName": "Numeric field",
+            "name": "Category",
+            "kind": "Grouping"
+        }
+    ],
+    "dataViewMappings": [
+        {
+            "conditions": [
+                {
+                    "Category": {
+                        "max": 1
+                    }
+                }
+            ],
+            "categorical": {
+                "categories": {
+                    "for": {
+                        "in": "Category"
+                    },
+                    "dataReductionAlgorithm": {
+                        "top": {
+                            "count": 10000
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "objects": {
+        "general": {
+            "displayName": "General",
+            "displayNameKey": "formattingGeneral",
+            "properties": {
+                "selection": {
+                    "displayName": "Selection",
+                    "type": {
+                        "text": true
+                    }
+                },
+                "filter": {
+                    "type": {
+                        "filter": true
+                    }
+                },      
+                "selfFilter": {
+                    "type": {
+                        "filter": {
+                            "selfFilter": true
+                        }
+                    }
+                },
+                "rangeSelectionStart": {
+                    "type": {
+                        "text": true
+                    }
+                },
+                "rangeSelectionEnd": {
+                    "type": {
+                        "text": true
+                    }
+                }                                     
+            }
+        }    
+    },
+    "supportsHighlight": true,
+    "suppressDefaultTitle": true,
+    "sorting": {
+        "default": {}
+    }
+}
