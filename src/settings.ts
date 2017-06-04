@@ -34,11 +34,6 @@ module powerbi.extensibility.visual {
             rangeSelectionEnd: string;
             multiselect: boolean;
             selection: string;
-/*            getPersistedSelectionState?: () => powerbi.extensibility.ISelectionId[];
-            persistSelectionState?: (selectionIds: string[]) => void;
-            restorePersistedRangeSelectionState?: () => void;
-            applyAdvancedFilter?: (filter: IAdvancedFilter) => void;
-            getAdvancedFilterColumnTarget?: () => IFilterColumnTarget;*/
         };
         headerText: {
             marginLeft: number;

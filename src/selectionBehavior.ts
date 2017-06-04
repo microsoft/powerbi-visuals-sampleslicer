@@ -56,7 +56,6 @@ module powerbi.extensibility.visual {
         private callbacks: SampleSlicerCallbacks;
 
         constructor(callbacks: SampleSlicerCallbacks) {
-            debugger;
             this.scalableRange = new ScalableRange();
             this.callbacks = callbacks;
         }

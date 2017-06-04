@@ -553,12 +553,18 @@ module powerbi.extensibility.visual {
                 }
             }
 
-            //apply input
+            //update range selection model if changed
             let range: ValueRange<number> = this.behavior.scalableRange.getValue();
             if (type === RangeValueType.Start) {
+                if (range.min === inputValue){
+                    return;
+                }
                 range.min = inputValue;
             }
             else if (type === RangeValueType.End) {
+                if (range.max === inputValue){
+                    return;
+                }                
                 range.max = inputValue;
             }
             this.behavior.scalableRange.setValue(range);
@@ -783,7 +789,6 @@ module powerbi.extensibility.visual {
          *  Callbacks consumed by the SelectionBehavior class 
          * */
         private getCallbacks(): SampleSlicerCallbacks {
-            debugger;
             let callbacks: SampleSlicerCallbacks ={};
 
             callbacks.applyAdvancedFilter = (filter: IAdvancedFilter): void => {
