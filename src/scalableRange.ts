@@ -90,8 +90,8 @@ module powerbi.extensibility.visual {
 
         public setScaledValue(scaledRange: ValueRange<number>): void {
             this.range = {
-                min: (scaledRange.min == ScalableRange.TRANSFORMATION_RANGE_MIN) ? null : this.scalingTransformation.invert(scaledRange.min),
-                max: (scaledRange.max == ScalableRange.TRANSFORMATION_RANGE_MAX) ? null : this.scalingTransformation.invert(scaledRange.max)
+                min: (scaledRange.min == ScalableRange.TRANSFORMATION_RANGE_MIN) ? (this.range.min < this.scalingTransformationDomain.min ? this.range.min : null) : this.scalingTransformation.invert(scaledRange.min),
+                max: (scaledRange.max == ScalableRange.TRANSFORMATION_RANGE_MAX) ? (this.range.max > this.scalingTransformationDomain.max ? this.range.max : null) : this.scalingTransformation.invert(scaledRange.max)
             }
         }
     }

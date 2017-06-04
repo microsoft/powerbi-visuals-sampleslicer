@@ -214,21 +214,21 @@ module powerbi.extensibility.visual {
                     : options.columns;
 
             if (totalColumns === 0 && totalRows === 0) {
-                    totalColumns = totalItems;
-                    totalRows = 1;
+                totalColumns = totalItems;
+                totalRows = 1;
             } else if (totalColumns === 0 && totalRows > 0) {
                 totalColumns = Math.ceil(totalItems / totalRows);
             } else if (totalColumns > 0 && totalRows === 0) {
                 totalRows = Math.ceil(totalItems / totalColumns);
             }
 
-                if (totalRows === 0) {
-                    totalRows = this._totalRows;
-                }
+            if (totalRows === 0) {
+                totalRows = this._totalRows;
+            }
 
-                if (totalColumns === 0) {
-                    totalColumns = this._totalColumns;
-                }
+            if (totalColumns === 0) {
+                totalColumns = this._totalColumns;
+            }
 
 
             let m: number = 0,
@@ -348,7 +348,7 @@ module powerbi.extensibility.visual {
 
             rowSelection.style({ 'width': null });
 
-            
+
             cellSelection
                 .exit()
                 .remove();
