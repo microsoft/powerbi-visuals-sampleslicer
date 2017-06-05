@@ -98,6 +98,7 @@
                     position: relative;
                     margin-top: 5px;
                     margin-left: 6px;
+                    margin-bottom: 5px;
 
                     .numeric-range-slicer-input {
                         box-sizing: border-box;
@@ -329,10 +330,10 @@
 
 /// Height of the slider's handle
 /// @type String
-@control-height: 15px;
+@control-height: 20px;
 /// Width of the slider's handle
 /// @type String
-@control-width: 6px;
+@control-width: 10px;
 /// Color of the slider's handle
 /// @type Color
 @control-color: rgb(55,55,55);
@@ -377,14 +378,14 @@
   .noUi-handle {
     background-color: @control-color;
     border: none;
-    border-radius: 6px;
+    border-radius: 4px;
     box-shadow: none;
     color: #FFFFFF;
     display: table;
     font-size: 15px;
     height: @control-height;
     left: 0;
-    margin-left: -3px;
+    margin-left: -6px;
     margin-top: -(@control-height/2) + @gutter-height/2 - 1;
     padding: 0;
     position: absolute;
