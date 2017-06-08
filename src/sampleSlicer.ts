@@ -170,7 +170,7 @@ module powerbi.extensibility.visual {
 
             if (searchText) {
                 searchText = searchText.toLowerCase();
-                converter.dataPoints.forEach(x => x.filtered = x.category.toLowerCase().indexOf(searchText) != 0);
+                converter.dataPoints.forEach(x => x.filtered = x.category.toLowerCase().indexOf(searchText) !== 0);
             }
 
             let categories: DataViewCategoricalColumn = dataView.categorical.categories[0];
@@ -199,13 +199,13 @@ module powerbi.extensibility.visual {
                 get: function () {
                     return window.window.pageXOffset;
                 }
-            })
+            });
 
             Object.defineProperty(window, "pageYOffset", {
                 get: function () {
                     return window.window.pageYOffset;
                 }
-            })
+            });
 
 
         }
@@ -218,23 +218,23 @@ module powerbi.extensibility.visual {
                 return;
             }
 
-            //create viewport if not yet created
+            // create viewport if not yet created
             if (!this.currentViewport) {
                 this.currentViewport = options.viewport;
                 this.initContainer();
             }
 
-            //update dataview 
+            // update dataview
             const existingDataView = this.dataView;
             this.dataView = options.dataViews[0];
 
-            //check if the dataView changed to determine if scrollbars need to be reset 
+            // check if the dataView changed to determine if scrollbars need to be reset
             let resetScrollbarPosition: boolean = true;
             if (existingDataView) {
                 resetScrollbarPosition = !SampleSlicer.hasSameCategoryIdentity(existingDataView, this.dataView);
             }
 
-            //update viewport 
+            // update viewport
             if (options.viewport.height === this.currentViewport.height
                 && options.viewport.width === this.currentViewport.width) {
                 this.waitingForData = false;
@@ -294,7 +294,7 @@ module powerbi.extensibility.visual {
         }
 
         private updateInternal(resetScrollbarPosition: boolean) {
-            //convert data to internal representation
+            // convert data to internal representation
             let data = SampleSlicer.converter(
                 this.dataView,
                 this.$searchInput.val(),
@@ -326,7 +326,7 @@ module powerbi.extensibility.visual {
                 'height': (this.currentViewport.height - 120) + "px"
             });
 
-            //update tableView and render it  
+            // update tableView and render it
             this.tableView
                 .rowHeight(height)
                 .columnWidth(this.settings.slicerText.width)
@@ -357,7 +357,7 @@ module powerbi.extensibility.visual {
                 slicerBodyViewport: IViewport = this.getSlicerBodyViewport(this.currentViewport);
 
 
-            //Prevents visual container from doing any other actions on keypress. 
+            // Prevents visual container from doing any other actions on keypress
             this.$root.on('keyup keydown', (event: JQueryEventObject) => {
                 event.stopPropagation();
             });
@@ -461,7 +461,7 @@ module powerbi.extensibility.visual {
             });
 
             this.$start.on("keyup", (event: JQueryEventObject) => {
-                if (event.keyCode == 13) {
+                if (event.keyCode === 13) {
                     let inputString = this.$start.val();
                     this.onRangeInputTextboxChange(inputString, RangeValueType.Start);
                 }
@@ -478,7 +478,7 @@ module powerbi.extensibility.visual {
             });
 
             this.$end.on("keyup", (event: JQueryEventObject) => {
-                if (event.keyCode == 13) {
+                if (event.keyCode === 13) {
                     let inputString = this.$end.val();
                     this.onRangeInputTextboxChange(inputString, RangeValueType.End);
                 }
@@ -511,22 +511,22 @@ module powerbi.extensibility.visual {
             let $sliderContainer: JQuery = $(this.rangeSlicerSlider[0][0]);
 
             if (!this.slider) {
-                //create slider 
+                // create slider
                 this.$sliderElement = $('<div/>')
                     .appendTo($sliderContainer);
                 (<any>window).noUiSlider.create(this.$sliderElement.get(0), this.createSliderOptions());
 
                 this.slider = (<noUiSlider.Instance>this.$sliderElement.get(0)).noUiSlider;
 
-                //populate slider event handlers 
+                // populate slider event handlers
                 this.slider.on("change", (data: any[], index: number, values: any) => {
                     this.behavior.scalableRange.setScaledValue({ min: values[0], max: values[1] });
                     this.behavior.updateOnRangeSelectonChange();
                 });
 
             } else {
-                //get the scaled range value 
-                //and use it to set the slider 
+                // get the scaled range value
+                // and use it to set the slider
                 let scaledValue = this.behavior.scalableRange.getScaledValue();
                 this.slider.set([scaledValue.min, scaledValue.max]);
             }
@@ -541,8 +541,8 @@ module powerbi.extensibility.visual {
             return value != null ? valueFormatter.format(value, "#") : '';
         }
 
-        private onRangeInputTextboxChange(inputString: string, type: RangeValueType): void {
-            //parse input
+        private onRangeInputTextboxChange(inputString: string, rangeValueType: RangeValueType): void {
+            // parse input
             let inputValue: number;
             if (!inputString) {
                 inputValue = null;
@@ -553,15 +553,15 @@ module powerbi.extensibility.visual {
                 }
             }
 
-            //update range selection model if changed
+            // update range selection model if changed
             let range: ValueRange<number> = this.behavior.scalableRange.getValue();
-            if (type === RangeValueType.Start) {
+            if (rangeValueType === RangeValueType.Start) {
                 if (range.min === inputValue) {
                     return;
                 }
                 range.min = inputValue;
             }
-            else if (type === RangeValueType.End) {
+            else if (rangeValueType === RangeValueType.End) {
                 if (range.max === inputValue) {
                     return;
                 }
@@ -569,7 +569,7 @@ module powerbi.extensibility.visual {
             }
             this.behavior.scalableRange.setValue(range);
 
-            //trigger range change processing
+            // trigger range change processing
             this.behavior.updateOnRangeSelectonChange();
         }
 
@@ -786,7 +786,7 @@ module powerbi.extensibility.visual {
 
 
         /**
-         *  Callbacks consumed by the SelectionBehavior class 
+         *  Callbacks consumed by the SelectionBehavior class
          * */
         private getCallbacks(): SampleSlicerCallbacks {
             let callbacks: SampleSlicerCallbacks = {};

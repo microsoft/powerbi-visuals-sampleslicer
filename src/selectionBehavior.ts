@@ -61,11 +61,11 @@ module powerbi.extensibility.visual {
         }
 
 
-        /** 
+        /**
             Implementation of IInteractiveBehavior i/f
         */
         public bindEvents(options: SampleSlicerBehaviorOptions, selectionHandler: ISelectionHandler): void {
-            const slicers: Selection<SelectableDataPoint> = this.slicers = options.slicerItemContainers
+            const slicers: Selection<SelectableDataPoint> = this.slicers = options.slicerItemContainers;
 
             this.dataPoints = options.dataPoints;
             this.interactivityService = options.interactivityService;
@@ -95,7 +95,7 @@ module powerbi.extensibility.visual {
 
         }
 
-        /** 
+        /**
             Implementation of IInteractiveBehavior i/f
         */
         public renderSelection(hasSelection: boolean): void {

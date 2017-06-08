@@ -67,7 +67,7 @@ module powerbi.extensibility.visual {
             return {
                 min: (!this.range || !this.range.min) ? ScalableRange.TRANSFORMATION_RANGE_MIN : this.scalingTransformation(this.saturateDomainValue(this.range.min)),
                 max: (!this.range || !this.range.max) ? ScalableRange.TRANSFORMATION_RANGE_MAX : this.scalingTransformation(this.saturateDomainValue(this.range.max)),
-            }
+            };
         }
 
         private saturateDomainValue(domainValue: number) {
@@ -90,9 +90,9 @@ module powerbi.extensibility.visual {
 
         public setScaledValue(scaledRange: ValueRange<number>): void {
             this.range = {
-                min: (scaledRange.min == ScalableRange.TRANSFORMATION_RANGE_MIN) ? (this.range.min < this.scalingTransformationDomain.min ? this.range.min : null) : this.scalingTransformation.invert(scaledRange.min),
-                max: (scaledRange.max == ScalableRange.TRANSFORMATION_RANGE_MAX) ? (this.range.max > this.scalingTransformationDomain.max ? this.range.max : null) : this.scalingTransformation.invert(scaledRange.max)
-            }
+                min: (scaledRange.min === ScalableRange.TRANSFORMATION_RANGE_MIN) ? (this.range.min < this.scalingTransformationDomain.min ? this.range.min : null) : this.scalingTransformation.invert(scaledRange.min),
+                max: (scaledRange.max === ScalableRange.TRANSFORMATION_RANGE_MAX) ? (this.range.max > this.scalingTransformationDomain.max ? this.range.max : null) : this.scalingTransformation.invert(scaledRange.max)
+            };
         }
     }
 }
