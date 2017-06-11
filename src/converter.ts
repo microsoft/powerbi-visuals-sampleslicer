@@ -61,7 +61,7 @@ module powerbi.extensibility.visual {
                         category: categoryValue.toString(),
                         selected: true,
                         filtered: false,
-                        isSelectedRangePoint: scalableRange.isActive() && SampleSlicerConverter.isNumberWithingRange(categoryValue, scalableRange.getValue())
+                        isSelectedRangePoint: scalableRange.isActive() && SampleSlicerConverter.isNumberWithinRange(categoryValue, scalableRange.getValue())
                     });
                 }
 
@@ -72,7 +72,7 @@ module powerbi.extensibility.visual {
             }
         }
 
-        private static isNumberWithingRange(theNumber: number, subRange: ValueRange<number>): boolean {
+        private static isNumberWithinRange(theNumber: number, subRange: ValueRange<number>): boolean {
             if (subRange.min && subRange.min > theNumber) {
                 return false;
             }
