@@ -1,4 +1,4 @@
-
+d
 # PowerBI Slicer custom visual sample
 [![Build Status](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer.svg?branch=master)](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer)
 
@@ -38,5 +38,5 @@ pbiviz start
   - [Adding InteractivityUtils to the project](doc/AddingInteractivityUtils.md)
   - [Using InteractivityUtils](doc/UsingInteractivityUtils.md)
 3. Advanced selection with Advanced Filter API
-  - [Adding Advanced Filter API to the project](doc/AddingAdvanceFilterAPI.md)
-  - [Using Advanced Filter API](doc/UsingAdvanceFilterAPI.md)
+  - [Adding Advanced Filter API to the project](doc/AddingAdvancedFilterAPI.md)
+  - [Using Advanced Filter API](doc/UsingAdvancedFilterAPI.md)
