@@ -32,6 +32,6 @@ pbiviz start
 ```
 
 ### Understanding the code
-1. [Code structure](Tutorial/CodeStructure.md)
-2. [Discrete selection](Tutorial/DiscreteSelection.md)
-3. [Advanced filter selection](Tutorial/AdvancedFilterSelection.md)
+1. [Code structure](doc/CodeStructure.md)
+2. [Discrete selection](doc/DiscreteSelection.md)
+3. [Advanced filter selection](doc/AdvancedFilterSelection.md)
