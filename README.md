@@ -1,3 +1,4 @@
+
 # PowerBI Slicer custom visual sample
 [![Build Status](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer.svg?branch=master)](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer)
 
@@ -33,5 +34,9 @@ pbiviz start
 
 ### Understanding the code
 1. [Code structure](doc/CodeStructure.md)
-2. [Discrete selection](doc/DiscreteSelection.md)
-3. [Advanced filter selection](doc/AdvancedFilterSelection.md)
+2. Discrete selection with InteractivityUtils
+  - [Adding InteractivityUtils to the project](doc/AddingInteractivityUtils.md)
+  - [Using InteractivityUtils](doc/UsingInteractivityUtils.md)
+3. Advanced selection with Advanced Filter API
+  - [Adding Advanced Filter API to the project](doc/AddingAdvanceFilterAPI.md)
+  - [Using Advanced Filter API](doc/UsingAdvanceFilterAPI.md)
