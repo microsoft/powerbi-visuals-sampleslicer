@@ -11,4 +11,3 @@
 - Add a reference to tsconfig.json:
 
   ![](/doc/images/interactivity-utils-in-tsconfig.json.PNG)
-
