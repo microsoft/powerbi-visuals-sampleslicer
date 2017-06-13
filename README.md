@@ -6,7 +6,7 @@ Demostrates the use of the Advanced Filtering API introduced in the revision 1.7
 This PowerBI Custom Visual relies on the Advanced Filter API for bulk data-point selection and [InteractivityUtils](https://github.com/Microsoft/powerbi-visuals-utils-interactivityutils) for discrete data-point selection.
 
 ### Understanding the visual
-![]("doc/images/SampleSlicer.PNG")
+![](doc/images/SampleSlicer.PNG)
 
 ### Setting Up Environment
 
