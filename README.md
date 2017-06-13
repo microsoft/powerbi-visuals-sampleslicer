@@ -1,4 +1,3 @@
-d
 # PowerBI Slicer custom visual sample
 [![Build Status](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer.svg?branch=master)](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer)
 
