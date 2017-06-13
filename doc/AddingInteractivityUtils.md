@@ -1,5 +1,16 @@
-# PowerBI Slicer custom visual sample
-[![Build Status](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer.svg?branch=master)](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer)
+# Adding InteractivityUtils to the custom visual
+
+- Add a reference to package.json:
+
+  ![](/doc/images/interactivity-utils-in-package.json.PNG)
+
+- Add a reference to pbiviz.json:
+  ![](/doc/images/interactivity-utils-in-pbiviz.json.PNG)
+
+- Add a reference to tsconfig.json:
+  ![](/doc/images/interactivity-utils-in-tsconfig.json.PNG)
+
+
 
 Demostrates the use of the Advanced Filtering API introduced in the revision 1.7 of [PowerBI Visuals Tools](https://github.com/Microsoft/PowerBI-visuals-tools). 
 
