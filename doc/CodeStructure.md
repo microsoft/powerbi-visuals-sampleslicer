@@ -1,12 +1,16 @@
-# PowerBI Slicer custom visual sample
-[![Build Status](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer.svg?branch=master)](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer)
+# Custom Visual code structure
+
+![](/doc/images/src-folder.PNG)
+
+
+
 
 Demostrates the use of the Advanced Filtering API introduced in the revision 1.7 of [PowerBI Visuals Tools](https://github.com/Microsoft/PowerBI-visuals-tools). 
 
 This PowerBI Custom Visual relies on the Advanced Filter API for bulk data-point selection and [InteractivityUtils](https://github.com/Microsoft/powerbi-visuals-utils-interactivityutils) for discrete data-point selection.
 
 ### Understanding the visual
-![]("doc/images/SampleSlicer.PNG")
+
 
 ### Setting Up Environment
 
