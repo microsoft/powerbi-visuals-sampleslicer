@@ -48,5 +48,6 @@ The main module then invokes the filter using the method applyJsonFilter() on th
 
 Please note the strings "general" and "filter" correspond to the entry we added to capabilities.json file as follows: 
 
+![](/doc/images/advanced-filter-api-in-capabilities.json.PNG)
 
 
