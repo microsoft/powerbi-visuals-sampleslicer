@@ -15,4 +15,5 @@
 - Add filter in the capabilities.json as follows:
 
   ![](/doc/images/advanced-filter-api-in-capabilities.json.PNG)
-  This entry will define a property where the Advanced Filter and the discrete selection IDs will be persisted.
+  
+  This entry defines a property where the Advanced Filter and the discrete selection IDs will be persisted.
