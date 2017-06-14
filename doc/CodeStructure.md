@@ -2,7 +2,7 @@
 
 ![](/doc/images/src-folder.PNG)
 
-Following source files are of particular interest:
+The following source files are of particular interest:
 - selectionBehavior.ts:
 
     This file implements all functionality related to data-point selection/filtering. Both basic discrete selection and advanced query-based selection of Advanced Filter API is concentrated in this file. 
