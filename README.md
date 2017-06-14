@@ -12,7 +12,7 @@ See a [demo PowerBI report](doc/SampleSlicer.pbix) to get an idea about the visu
 
 ![](doc/images/SampleSlicer.PNG)
 
-### Setting Up Environment
+### Setting up environment
 
 You will first need to set up your environment as detailed [here](https://github.com/Microsoft/PowerBI-visuals/blob/master/Readme.md#setting-up-environment).
 
