@@ -3,7 +3,7 @@
 
 Demonstrates the use of the Advanced Filtering API introduced in the revision 1.7 of [PowerBI Visuals Tools](https://github.com/Microsoft/PowerBI-visuals-tools). 
 
-This PowerBI Custom Visual relies on the Advanced Filter API for bulk data-point selection and [InteractivityUtils](https://github.com/Microsoft/powerbi-visuals-utils-interactivityutils) for discrete data-point selection.
+This PowerBI Custom Visual relies on the Advanced Filter API for bulk data-point selection and [Interactivity Utils](https://github.com/Microsoft/powerbi-visuals-utils-interactivityutils) for discrete data-point selection.
 
 ### Understanding the visual
 The visual lets the user select numeric data inputs to be displayed in all other visuals in the same report. The user can either select discrete values or a range by adjusting the sliders. 
@@ -34,8 +34,8 @@ pbiviz start
 ### Understanding the code
 1. [Code structure](doc/CodeStructure.md)
 2. Discrete selection with InteractivityUtils
-  - [Adding InteractivityUtils to the project](doc/AddingInteractivityUtils.md)
-  - [Using InteractivityUtils](doc/UsingInteractivityUtils.md)
+  - [Adding Interactivity Utils to the project](doc/AddingInteractivityUtils.md)
+  - [Using Interactivity Utils](doc/UsingInteractivityUtils.md)
 3. Advanced selection with Advanced Filter API
   - [Adding Advanced Filter API to the project](doc/AddingAdvancedFilterAPI.md)
   - [Using Advanced Filter API](doc/UsingAdvancedFilterAPI.md)
