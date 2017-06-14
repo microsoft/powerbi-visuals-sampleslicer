@@ -1,4 +1,4 @@
-# Adding InteractivityUtils to the custom visual
+# Adding the Interactivity Utils to the custom visual
 
 - Add a reference in the package.json:
 
