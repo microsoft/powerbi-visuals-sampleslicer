@@ -1,6 +1,6 @@
 # Using InteractivityUtils
 
-The utility package ![InteractivityUtils](https://github.com/Microsoft/powerbi-visuals-utils-interactivityutils) " set of functions and classes in order to simplify implementation of cross-selection" 
+The utility package [InteractivityUtils](https://github.com/Microsoft/powerbi-visuals-utils-interactivityutils) " set of functions and classes in order to simplify implementation of cross-selection" 
 
 ```
 pbiviz start
