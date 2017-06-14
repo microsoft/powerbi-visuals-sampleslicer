@@ -6,7 +6,7 @@ The Sample Slicer visual takes advantage of Advanced Filter API for the bulk sel
 
 The Sample Slicer visual has all selection-related logic concentrated in one file [*selectionBehavior.ts*](/src/selectionBehavior.ts).
 
-The method below constructs the query and the filter object and passes it along to the main visual module in [*sampleSlicer.ts*](/src/sampleSlicer.ts).
+The method below constructs the filter object and passes it along to the main visual module in [*sampleSlicer.ts*](/src/sampleSlicer.ts).
 
 ```
     public updateOnRangeSelectonChange(): void {
