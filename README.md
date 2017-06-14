@@ -31,9 +31,9 @@ pbiviz start
 
 ### Understanding the code
 1. [Code structure](doc/CodeStructure.md)
-2. Discrete selection with InteractivityUtils
-  - [Adding Interactivity Utils to the project](doc/AddingInteractivityUtils.md)
-  - [Using Interactivity Utils](doc/UsingInteractivityUtils.md)
-3. Advanced selection with Advanced Filter API
-  - [Adding Advanced Filter API to the project](doc/AddingAdvancedFilterAPI.md)
-  - [Using Advanced Filter API](doc/UsingAdvancedFilterAPI.md)
+2. Discrete selection with the Interactivity Utils
+  - [Adding the Interactivity Utils to the project](doc/AddingInteractivityUtils.md)
+  - [Using the Interactivity Utils](doc/UsingInteractivityUtils.md)
+3. Advanced selection with the Advanced Filter API
+  - [Adding the Advanced Filter API to the project](doc/AddingAdvancedFilterAPI.md)
+  - [Using the Advanced Filter API](doc/UsingAdvancedFilterAPI.md)
