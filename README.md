@@ -31,7 +31,7 @@ pbiviz start
 
 ### Understanding the code
 1. [Code structure](doc/CodeStructure.md)
-2. Discrete selection with the Interactivity Utils
+2. Discrete selection with the PowerBI Visuals Interactivity Utils
   - [Adding the Interactivity Utils to the project](doc/AddingInteractivityUtils.md)
   - [Using the Interactivity Utils](doc/UsingInteractivityUtils.md)
 3. Advanced selection with the Advanced Filter API
