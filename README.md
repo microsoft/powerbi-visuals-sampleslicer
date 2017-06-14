@@ -12,11 +12,11 @@ See a [demo PowerBI report](doc/SampleSlicer.pbix) to get an idea about the visu
 
 ![](doc/images/SampleSlicer.PNG)
 
-### Setting up environment
+### Setting up the environment
 
 You will first need to set up your environment as detailed [here](https://github.com/Microsoft/PowerBI-visuals/blob/master/Readme.md#setting-up-environment).
 
-### Install dev dependencies:
+### Installing dev dependencies
 
 Once you have cloned this example, run these commands to install dependencies and to connect the visual into powerbi.
 
@@ -24,7 +24,7 @@ Once you have cloned this example, run these commands to install dependencies an
 npm install # This command will install all necessary modules
 ```
 
-### Start dev app
+### Starting the dev app
 ```
 pbiviz start
 ```
