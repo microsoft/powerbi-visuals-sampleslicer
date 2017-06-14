@@ -11,3 +11,7 @@
 - Add a reference to tsconfig.json:
 
   ![](/doc/images/advanced-filter-api-in-tsconfig.json.PNG)
+  
+- Add filter to the capabilities.json as follows:
+
+  ![](/doc/images/advanced-filter-api-in-capabilities.json.PNG)
