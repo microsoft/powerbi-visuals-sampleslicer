@@ -1,4 +1,10 @@
-# PowerBI Slicer custom visual sample
+# Using Advanced Filter API 
+
+The [Advanced Filter API](https://github.com/Microsoft/powerbi-models) is introduced in the revision 1.7.0 of [PowerBI Visuals Tools](https://github.com/Microsoft/PowerBI-visuals-tools) and enables complex cross-visual data-point selection/filtering queries based on multiple criteria (such as "LessThan", "Contains", "Is", "IsBlank", etc.). 
+
+
+
+
 [![Build Status](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer.svg?branch=master)](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer)
 
 Demostrates the use of the Advanced Filtering API introduced in the revision 1.7 of [PowerBI Visuals Tools](https://github.com/Microsoft/PowerBI-visuals-tools). 
