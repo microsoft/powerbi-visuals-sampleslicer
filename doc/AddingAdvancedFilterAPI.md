@@ -1,17 +1,17 @@
 # Adding Advanced Filter API to the custom visual
 
-- Add a reference to package.json:
+- Add a reference in the package.json:
 
   ![](/doc/images/advanced-filter-api-in-package.json.PNG)
 
-- Add a reference to pbiviz.json:
+- Add a reference in the pbiviz.json:
 
   ![](/doc/images/advanced-filter-api-in-pbiviz.json.PNG)
 
-- Add a reference to tsconfig.json:
+- Add a reference in the tsconfig.json:
 
   ![](/doc/images/advanced-filter-api-in-tsconfig.json.PNG)
   
-- Add filter to the capabilities.json as follows:
+- Add filter in the capabilities.json as follows:
 
   ![](/doc/images/advanced-filter-api-in-capabilities.json.PNG)
