@@ -1,12 +1,12 @@
 # PowerBI Slicer custom visual sample
 [![Build Status](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer.svg?branch=master)](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer)
 
-Demonstrates the use of the Advanced Filtering API introduced in the revision 1.7 of [PowerBI Visuals Tools](https://github.com/Microsoft/PowerBI-visuals-tools). 
+Demonstrates the use of the Advanced Filtering API introduced in the version 1.7 of [PowerBI Visuals Tools](https://github.com/Microsoft/PowerBI-visuals-tools). 
 
-This PowerBI Custom Visual relies on the Advanced Filter API for bulk data-point selection and [Interactivity Utils](https://github.com/Microsoft/powerbi-visuals-utils-interactivityutils) for discrete data-point selection.
+This PowerBI Custom Visual relies on the Advanced Filter API for bulk data-point selection and [PowerBI Visuals Interactivity Utils](https://github.com/Microsoft/powerbi-visuals-utils-interactivityutils) for discrete data-point selection.
 
 ### Understanding the visual
-The visual lets the user select numeric data inputs to be displayed in all other visuals in the same report. The user can either select discrete values or a range by adjusting the sliders. 
+The visual lets the user select numeric data inputs to be displayed in all other visuals in the same report sheet. The user can either select discrete values or a range by adjusting the sliders. 
 
 See a [demo PowerBI report](doc/SampleSlicer.pbix) to get an idea about the visual's functionality.
 
@@ -14,9 +14,7 @@ See a [demo PowerBI report](doc/SampleSlicer.pbix) to get an idea about the visu
 
 ### Setting Up Environment
 
-Before starting creating your first custom visual follow by [this](https://github.com/Microsoft/PowerBI-visuals/blob/master/Readme.md#setting-up-environment)
-setting up environment instruction.
-
+You will first need to set up your environment as detailed [here](https://github.com/Microsoft/PowerBI-visuals/blob/master/Readme.md#setting-up-environment).
 
 ### Install dev dependencies:
 
