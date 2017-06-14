@@ -1,28 +1,7 @@
-# PowerBI Slicer custom visual sample
-[![Build Status](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer.svg?branch=master)](https://travis-ci.org/Microsoft/powerbi-visuals-sampleslicer)
+# Using InteractivityUtils
 
-Demostrates the use of the Advanced Filtering API introduced in the revision 1.7 of [PowerBI Visuals Tools](https://github.com/Microsoft/PowerBI-visuals-tools). 
+The utility package ![InteractivityUtils](https://github.com/Microsoft/powerbi-visuals-utils-interactivityutils) " set of functions and classes in order to simplify implementation of cross-selection" 
 
-This PowerBI Custom Visual relies on the Advanced Filter API for bulk data-point selection and [InteractivityUtils](https://github.com/Microsoft/powerbi-visuals-utils-interactivityutils) for discrete data-point selection.
-
-### Understanding the visual
-![]("doc/images/SampleSlicer.PNG")
-
-### Setting Up Environment
-
-Before starting creating your first custom visual follow by [this](https://github.com/Microsoft/PowerBI-visuals/blob/master/Readme.md#setting-up-environment)
-setting up environment instruction.
-
-
-### Install dev dependencies:
-
-Once you have cloned this example, run these commands to install dependencies and to connect the visual into powerbi.
-
-```
-npm install # This command will install all necessary modules
-```
-
-### Start dev app
 ```
 pbiviz start
 ```
