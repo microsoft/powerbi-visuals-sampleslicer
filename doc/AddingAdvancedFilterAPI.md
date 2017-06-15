@@ -16,4 +16,4 @@
 
   ![](/doc/images/advanced-filter-api-in-capabilities.json.PNG)
   
-  This entry defines a property where the Advanced Filter and the discrete selection IDs will be persisted.
+  The filter entry enables communication of selection-related information between the visual and the hosting application. The entry is used for both the discrete selections and the bulk selections of the Advanced Filter.
