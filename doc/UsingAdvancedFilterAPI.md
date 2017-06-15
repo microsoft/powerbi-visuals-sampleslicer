@@ -46,8 +46,10 @@ The main module then invokes the filter using the method applyJsonFilter() on th
     };
 ```
 
-Please note the strings "general" and "filter" correspond to the entry we added to [*capabilities.json*](/capabilities.json) as follows: 
+Please note the strings "general" and "filter" refer to the filter entry we added to [*capabilities.json*](/capabilities.json) as follows: 
 
 ![](/doc/images/advanced-filter-api-in-capabilities.json.PNG)
 
+The entry enables communication of selection-related information between the visual and the hosting application. 
 
+For the complete description of the Advanced Filter API please refer to the [link](https://github.com/Microsoft/powerbi-models).
