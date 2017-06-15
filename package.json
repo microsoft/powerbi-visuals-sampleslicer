@@ -1,0 +1,41 @@
+{
+	"name": "powerbi-visuals-sampleslicer",
+	"version": "1.0.0",
+	"author": {
+		"name": "Microsoft"
+	},
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Microsoft/powerbi-visuals-sampleslicer"
+	},
+	"scripts": {
+		"pbiviz": "pbiviz",
+		"start": "pbiviz start",
+		"package": "pbiviz package", 
+		"lint": "tslint -r \"node_modules/tslint-microsoft-contrib\"  \"+(src|test)/**/*.ts\""
+	},
+	"dependencies": {
+		"@types/d3": "3.5.36",
+		"@types/nouislider": "9.0.0",
+		"@types/jasmine": "2.5.37",
+		"@types/jasmine-jquery": "1.5.28",
+		"@types/lodash": "4.14.52",
+		"powerbi-models": "0.10.0",
+		"jasmine": "2.5.2",
+		"jasmine-jquery": "2.1.1",
+		"lodash": "4.16.2",
+		"powerbi-visuals-utils-colorutils": "0.2.1",
+		"powerbi-visuals-utils-dataviewutils": "1.0.1",
+		"powerbi-visuals-utils-formattingutils": "0.4.0",
+		"powerbi-visuals-utils-interactivityutils": "0.3.0",
+		"powerbi-visuals-utils-typeutils": "0.2.1",
+		"typescript": "2.1.4",
+		"nouislider": "^8.0.2"
+	}, 
+	"devDependencies": {
+	  "tslint": "^4.4.2",
+	  "tslint-microsoft-contrib": "^4.0.0"
+	}  
+}
+
