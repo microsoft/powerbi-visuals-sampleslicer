@@ -54,7 +54,7 @@ module powerbi.extensibility.visual {
             marginTop: number;
             marginLeft: number;
         };
-    };
+    }
 
     export let defaultSettings: Settings = {
         general: {

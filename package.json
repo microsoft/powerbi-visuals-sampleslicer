@@ -1,41 +1,43 @@
 {
-	"name": "powerbi-visuals-sampleslicer",
-	"version": "1.0.0",
-	"author": {
-		"name": "Microsoft"
-	},
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Microsoft/powerbi-visuals-sampleslicer"
-	},
-	"scripts": {
-		"pbiviz": "pbiviz",
-		"start": "pbiviz start",
-		"package": "pbiviz package", 
-		"lint": "tslint -r \"node_modules/tslint-microsoft-contrib\"  \"+(src|test)/**/*.ts\""
-	},
-	"dependencies": {
-		"@types/d3": "3.5.36",
-		"@types/nouislider": "9.0.0",
-		"@types/jasmine": "2.5.37",
-		"@types/jasmine-jquery": "1.5.28",
-		"@types/lodash": "4.14.52",
-		"powerbi-models": "0.10.0",
-		"jasmine": "2.5.2",
-		"jasmine-jquery": "2.1.1",
-		"lodash": "4.16.2",
-		"powerbi-visuals-utils-colorutils": "0.2.1",
-		"powerbi-visuals-utils-dataviewutils": "1.0.1",
-		"powerbi-visuals-utils-formattingutils": "0.4.0",
-		"powerbi-visuals-utils-interactivityutils": "0.3.0",
-		"powerbi-visuals-utils-typeutils": "0.2.1",
-		"typescript": "2.1.4",
-		"nouislider": "^8.0.2"
-	}, 
-	"devDependencies": {
-	  "tslint": "^4.4.2",
-	  "tslint-microsoft-contrib": "^4.0.0"
-	}  
+  "name": "powerbi-visuals-sampleslicer",
+  "version": "1.1.0",
+  "author": {
+    "name": "Microsoft"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Microsoft/powerbi-visuals-sampleslicer"
+  },
+  "scripts": {
+    "pbiviz": "pbiviz",
+    "start": "pbiviz start",
+    "package": "pbiviz package",
+    "lint": "tslint -r \"node_modules/tslint-microsoft-contrib\"  \"+(src|test)/**/*.ts\""
+  },
+  "dependencies": {
+    "jquery": "^3.2.1",
+    "lodash": "^4.17.4",
+    "nouislider": "^8.0.2",
+    "powerbi-models": "^0.11.3",
+    "powerbi-visuals-utils-colorutils": "^1.0.0",
+    "powerbi-visuals-utils-dataviewutils": "^1.2.0",
+    "powerbi-visuals-utils-formattingutils": "^2.1.0",
+    "powerbi-visuals-utils-interactivityutils": "^1.0.0",
+    "powerbi-visuals-utils-typeutils": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/d3": "3.5.36",
+    "@types/jasmine": "2.5.53",
+    "@types/jasmine-jquery": "1.5.31",
+    "@types/jquery": "2.0.41",
+    "@types/lodash": "4.14.52",
+    "@types/nouislider": "9.0.0",
+    "jasmine": "2.6.0",
+    "jasmine-jquery": "2.1.1",
+    "powerbi-visuals-tools": "1.7.0",
+    "tslint": "^5.4.3",
+    "tslint-microsoft-contrib": "^5.0.0",
+    "typescript": "^2.3.4"
+  }
 }
-

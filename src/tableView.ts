@@ -308,16 +308,16 @@ module powerbi.extensibility.visual {
                 cellSelection: UpdateSelection<any>;
 
             rowSelection = visibleGroupContainer
-                .selectAll(TableView.RowSelector.selector)
+                .selectAll(TableView.RowSelector.selectorName)
                 .data(<SampleSlicerDataPoint[]>groupedData.data);
 
             rowSelection
                 .enter()
                 .append("div")
-                .classed(TableView.RowSelector.class, true);
+                .classed(TableView.RowSelector.className, true);
 
             cellSelection = rowSelection
-                .selectAll(TableView.CellSelector.selector)
+                .selectAll(TableView.CellSelector.selectorName)
                 .data((dataPoints: SampleSlicerDataPoint[]) => {
                     return dataPoints;
                 });
@@ -325,7 +325,7 @@ module powerbi.extensibility.visual {
             cellSelection
                 .enter()
                 .append('div')
-                .classed(TableView.CellSelector.class, true);
+                .classed(TableView.CellSelector.className, true);
 
 
             cellSelection.call((selection: Selection<any>) => {
