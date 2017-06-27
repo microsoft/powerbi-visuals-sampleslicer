@@ -347,7 +347,7 @@ module powerbi.extensibility.visual {
         public createInputElement(control: JQuery): JQuery {
             let $element: JQuery = $('<input type="text"/>')
                 .attr("type", "text")
-                .addClass(SampleSlicer.InputClass.class)
+                .addClass(SampleSlicer.InputClass.className)
                 .appendTo(control);
             return $element;
         }
@@ -364,34 +364,34 @@ module powerbi.extensibility.visual {
 
             this.rangeSlicer = d3.select(this.$root.get(0))
                 .append('div')
-                .classed(SampleSlicer.RangeSlicerSelector.class, true)
+                .classed(SampleSlicer.RangeSlicerSelector.className, true)
                 .style({
                     'background': '#ffffff'
                 });
 
             this.slicerHeader = this.rangeSlicer
                 .append('div')
-                .classed(SampleSlicer.HeaderSelector.class, true);
+                .classed(SampleSlicer.HeaderSelector.className, true);
 
             this.rangeSlicerHead = this.rangeSlicer
                 .append('div')
-                .classed(SampleSlicer.RangeSlicerHeadSelector.class, true);
+                .classed(SampleSlicer.RangeSlicerHeadSelector.className, true);
 
             this.rangeSlicerControls = this.rangeSlicerHead
                 .append('div')
-                .classed(SampleSlicer.RangeSlicerControlsSelector.class, true);
+                .classed(SampleSlicer.RangeSlicerControlsSelector.className, true);
 
             this.rangeSlicerSlider = this.rangeSlicerHead
                 .append('div')
-                .classed(SampleSlicer.RangeSlicerSliderSelector.class, true);
+                .classed(SampleSlicer.RangeSlicerSliderSelector.className, true);
 
             this.startControl = this.rangeSlicerControls
                 .append('div')
-                .classed(SampleSlicer.RangeSlicerControlSelector.class, true);
+                .classed(SampleSlicer.RangeSlicerControlSelector.className, true);
 
             this.endControl = this.rangeSlicerControls
                 .append('div')
-                .classed(SampleSlicer.RangeSlicerControlSelector.class, true);
+                .classed(SampleSlicer.RangeSlicerControlSelector.className, true);
 
             let $startControl: JQuery = $(this.startControl[0][0]);
             let $endControl: JQuery = $(this.endControl[0][0]);
@@ -402,14 +402,14 @@ module powerbi.extensibility.visual {
 
             let slicerContainer: Selection<any> = d3.select(this.$root.get(0))
                 .append('div')
-                .classed(SampleSlicer.ContainerSelector.class, true)
+                .classed(SampleSlicer.ContainerSelector.className, true)
                 .style({
                     'background': '#ffffff'
                 });
 
             this.slicerHeader
                 .append('div')
-                .classed(SampleSlicer.HeaderTextSelector.class, true)
+                .classed(SampleSlicer.HeaderTextSelector.className, true)
                 .style({
                     'margin-left': PixelConverter.toString(settings.headerText.marginLeft),
                     'margin-top': PixelConverter.toString(settings.headerText.marginTop)
@@ -419,7 +419,7 @@ module powerbi.extensibility.visual {
 
             this.slicerBody = slicerContainer
                 .append('div')
-                .classed(SampleSlicer.BodySelector.class, true)
+                .classed(SampleSlicer.BodySelector.className, true)
                 .style({
                     'height': (slicerBodyViewport.height - 120) + "px"
                 });
@@ -591,7 +591,7 @@ module powerbi.extensibility.visual {
                 .remove();
 
             let listItemElement: UpdateSelection<any> = ulItemElement
-                .selectAll(SampleSlicer.ItemContainerSelector.selector)
+                .selectAll(SampleSlicer.ItemContainerSelector.selectorName)
                 .data((dataPoint: SampleSlicerDataPoint) => {
                     return [dataPoint];
                 });
@@ -599,14 +599,14 @@ module powerbi.extensibility.visual {
             listItemElement
                 .enter()
                 .append('li')
-                .classed(SampleSlicer.ItemContainerSelector.class, true);
+                .classed(SampleSlicer.ItemContainerSelector.className, true);
 
             listItemElement.style({
                 'margin-left': PixelConverter.toString(settings.slicerItemContainer.marginLeft)
             });
 
             let slicerImgWrapperSelection: UpdateSelection<any> = listItemElement
-                .selectAll(SampleSlicer.SlicerImgWrapperSelector.selector)
+                .selectAll(SampleSlicer.SlicerImgWrapperSelector.className)
                 .data((dataPoint: SampleSlicerDataPoint) => {
                     return [dataPoint];
                 });
@@ -614,14 +614,14 @@ module powerbi.extensibility.visual {
             slicerImgWrapperSelection
                 .enter()
                 .append('img')
-                .classed(SampleSlicer.SlicerImgWrapperSelector.class, true);
+                .classed(SampleSlicer.SlicerImgWrapperSelector.className, true);
 
             slicerImgWrapperSelection
                 .exit()
                 .remove();
 
             let slicerTextWrapperSelection: UpdateSelection<any> = listItemElement
-                .selectAll(SampleSlicer.SlicerTextWrapperSelector.selector)
+                .selectAll(SampleSlicer.SlicerTextWrapperSelector.selectorName)
                 .data((dataPoint: SampleSlicerDataPoint) => {
                     return [dataPoint];
                 });
@@ -629,10 +629,10 @@ module powerbi.extensibility.visual {
             slicerTextWrapperSelection
                 .enter()
                 .append('div')
-                .classed(SampleSlicer.SlicerTextWrapperSelector.class, true);
+                .classed(SampleSlicer.SlicerTextWrapperSelector.className, true);
 
             let labelTextSelection: UpdateSelection<any> = slicerTextWrapperSelection
-                .selectAll(SampleSlicer.LabelTextSelector.selector)
+                .selectAll(SampleSlicer.LabelTextSelector.selectorName)
                 .data((dataPoint: SampleSlicerDataPoint) => {
                     return [dataPoint];
                 });
@@ -640,7 +640,7 @@ module powerbi.extensibility.visual {
             labelTextSelection
                 .enter()
                 .append('span')
-                .classed(SampleSlicer.LabelTextSelector.class, true);
+                .classed(SampleSlicer.LabelTextSelector.className, true);
 
             labelTextSelection.style({
                 'font-size': PixelConverter.fromPoint(settings.slicerText.textSize),
@@ -657,7 +657,7 @@ module powerbi.extensibility.visual {
             listItemElement
                 .exit()
                 .remove();
-        };
+        }
 
         private updateSelection(rowSelection: Selection<any>): void {
             let settings: Settings = this.settings,
@@ -666,10 +666,10 @@ module powerbi.extensibility.visual {
             if (data && settings) {
 
                 this.slicerHeader
-                    .select(SampleSlicer.HeaderTextSelector.selector)
+                    .select(SampleSlicer.HeaderTextSelector.selectorName)
                     .text(this.slicerData.categorySourceName);
 
-                let slicerText: Selection<any> = rowSelection.selectAll(SampleSlicer.LabelTextSelector.selector),
+                let slicerText: Selection<any> = rowSelection.selectAll(SampleSlicer.LabelTextSelector.selectorName),
                     textProperties: TextProperties = SampleSlicer.getSampleTextProperties(settings.slicerText.textSize),
                     formatString: string = data.formatString;
 
@@ -700,7 +700,7 @@ module powerbi.extensibility.visual {
                         'padding': PixelConverter.toString(settings.slicerText.padding)
                     });
 
-                rowSelection.selectAll(SampleSlicer.ItemContainerSelector.selector).style({
+                rowSelection.selectAll(SampleSlicer.ItemContainerSelector.selectorName).style({
                     'font-size': PixelConverter.fromPoint(settings.slicerText.textSize)
                 });
 
@@ -708,7 +708,7 @@ module powerbi.extensibility.visual {
                     this.interactivityService.applySelectionStateToData(data.slicerDataPoints);
 
                     let slicerBody: Selection<any> = this.slicerBody.attr('width', this.currentViewport.width),
-                        slicerItemContainers: Selection<any> = slicerBody.selectAll(SampleSlicer.ItemContainerSelector.selector);
+                        slicerItemContainers: Selection<any> = slicerBody.selectAll(SampleSlicer.ItemContainerSelector.selectorName);
 
                     let behaviorOptions: SampleSlicerBehaviorOptions = {
                         dataPoints: data.slicerDataPoints,
@@ -723,14 +723,14 @@ module powerbi.extensibility.visual {
                     });
 
                     this.behavior.styleSlicerInputs(
-                        rowSelection.select(SampleSlicer.ItemContainerSelector.selector),
+                        rowSelection.select(SampleSlicer.ItemContainerSelector.selectorName),
                         this.interactivityService.hasSelection());
                 }
                 else {
-                    this.behavior.styleSlicerInputs(rowSelection.select(SampleSlicer.ItemContainerSelector.selector), false);
+                    this.behavior.styleSlicerInputs(rowSelection.select(SampleSlicer.ItemContainerSelector.selectorName), false);
                 }
             }
-        };
+        }
 
         private createSearchHeader(container: JQuery): void {
             let counter: number = 0;
