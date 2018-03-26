@@ -118,8 +118,6 @@ module powerbi.extensibility.visual {
         private behavior: SelectionBehavior;
         private settings: Settings;
 
-        private currentFilter: IAdvancedFilter;
-
         public static DefaultFontFamily: string = "helvetica, arial, sans-serif";
         public static DefaultFontSizeInPt: number = 11;
         private static СellTotalInnerBorders: number = 2;
@@ -284,112 +282,57 @@ module powerbi.extensibility.visual {
             return [];
         }
 
-        private checkFilter(filter: IAdvancedFilter): boolean {
-            if (!this.currentFilter) {
-                return false;
-            }
-
-            if (filter) {
-                if (SampleSlicer.compareFilter(filter, this.currentFilter)) {
-                    this.currentFilter = filter;
-                    return true;
-                }
-                return false;
-            }
-
-            if (!this.currentFilter && filter) {
-                this.currentFilter = filter;
-            } else {
-                this.currentFilter = null;
-            }
-            return true;
-        }
-
-        public static compareFilter(filterA: IAdvancedFilter, filterB: IAdvancedFilter): boolean {
-            if (filterA.$schema !== filterB.$schema) {
-                return false;
-            }
-            if (filterA.logicalOperator !== filterB.logicalOperator) {
-                return false;
-            }
-            if (filterA.target &&
-                filterB.target &&
-                filterA.target.table !== filterB.target.table) {
-                return false;
-            }
-            if (filterA.conditions &&
-                filterB.conditions &&
-                filterA.conditions.length !== filterB.conditions.length) {
-                return false;
-            }
-            if (filterA.conditions && filterB.conditions) {
-                return filterA.conditions.every((conditionA: IAdvancedFilterCondition) => {
-                    return filterB.conditions.some((conditionB: IAdvancedFilterCondition) => {
-                        return conditionB.operator === conditionB.operator && conditionA.value === conditionB.value;
-                    });
-                });
-            }
-
-            return false;
-        }
-
         private restoreFilter(data: SampleSlicerData) {
             let restoredFilter: IAdvancedFilter =
             FilterManager.restoreFilter(data && data.slicerSettings.general.filter) as IAdvancedFilter;
             if (restoredFilter) {
                 restoredFilter.target = this.getCallbacks().getAdvancedFilterColumnTarget();
-                if (this.checkFilter(restoredFilter) || true) {
-                    // reset to default
-                    // this.onRangeInputTextboxChange("", RangeValueType.Start, true);
-                    // this.onRangeInputTextboxChange("", RangeValueType.End, true);
-                    // change value to correspond the filter values
-                    // in some case we can get value with one condition only
-                    if (restoredFilter.conditions.length === 1) {
-                        let value: {
-                            max?: any,
-                            min?: any
-                        } = {};
+                // reset to default
+                // this.onRangeInputTextboxChange("", RangeValueType.Start, true);
+                // this.onRangeInputTextboxChange("", RangeValueType.End, true);
+                // change value to correspond the filter values
+                // in some case we can get value with one condition only
+                if (restoredFilter.conditions.length === 1) {
+                    let value: {
+                        max?: any,
+                        min?: any
+                    } = {};
 
-                        let convertedValues = data.slicerDataPoints.map( (dataPoint: SampleSlicerDataPoint) => +dataPoint.category );
-                        value.min = d3.min(convertedValues);
-                        value.max = d3.max(convertedValues);
+                    let convertedValues = data.slicerDataPoints.map( (dataPoint: SampleSlicerDataPoint) => +dataPoint.category );
+                    value.min = d3.min(convertedValues);
+                    value.max = d3.max(convertedValues);
 
-                        let operator = restoredFilter.conditions[0].operator;
-                        if (operator === "LessThanOrEqual" || operator === "LessThan") {
-                            restoredFilter.conditions.push({
-                                operator: "GreaterThan",
-                                value: value.min
-                            });
-                        }
-                        if (operator === "GreaterThanOrEqual" || operator === "GreaterThan") {
-                            restoredFilter.conditions.push({
-                                operator: "LessThan",
-                                value: value.max
-                            });
-                        }
+                    let operator = restoredFilter.conditions[0].operator;
+                    if (operator === "LessThanOrEqual" || operator === "LessThan") {
+                        restoredFilter.conditions.push({
+                            operator: "GreaterThan",
+                            value: value.min
+                        });
                     }
-                    console.log('Restored', restoredFilter.conditions);
-
-                    let rangeValue: ValueRange<number> = <ValueRange<number>>{};
-
-                    restoredFilter.conditions.forEach( (condition: IAdvancedFilterCondition) => {
-                        let value = condition.value;
-                        let operator = condition.operator;
-                        let rangeType: RangeValueType;
-                        if (operator === "LessThanOrEqual" || operator === "LessThan") {
-                            rangeType = RangeValueType.End;
-                            rangeValue.max = <number>value;
-                        }
-                        if (operator === "GreaterThanOrEqual" || operator === "GreaterThan") {
-                            rangeType = RangeValueType.Start;
-                            rangeValue.min = <number>value;
-                        }
-                    });
-
-                    this.behavior.scalableRange.setValue(rangeValue);
-                    this.onRangeInputTextboxChange(rangeValue.min.toString(), RangeValueType.Start);
-                    this.onRangeInputTextboxChange(rangeValue.max.toString(), RangeValueType.End);
+                    if (operator === "GreaterThanOrEqual" || operator === "GreaterThan") {
+                        restoredFilter.conditions.push({
+                            operator: "LessThan",
+                            value: value.max
+                        });
+                    }
                 }
+
+                let rangeValue: ValueRange<number> = <ValueRange<number>>{};
+
+                restoredFilter.conditions.forEach( (condition: IAdvancedFilterCondition) => {
+                    let value = condition.value;
+                    let operator = condition.operator;
+                    if (operator === "LessThanOrEqual" || operator === "LessThan") {
+                        rangeValue.max = <number>value;
+                    }
+                    if (operator === "GreaterThanOrEqual" || operator === "GreaterThan") {
+                        rangeValue.min = <number>value;
+                    }
+                });
+
+                this.behavior.scalableRange.setValue(rangeValue);
+                this.onRangeInputTextboxChange(rangeValue.min.toString(), RangeValueType.Start);
+                this.onRangeInputTextboxChange(rangeValue.max.toString(), RangeValueType.End);
             }
         }
 
@@ -445,7 +388,6 @@ module powerbi.extensibility.visual {
             this.updateSliderInputTextboxes();
         }
 
-
         public createInputElement(control: JQuery): JQuery {
             let $element: JQuery = $('<input type="text"/>')
                 .attr("type", "text")
@@ -500,7 +442,6 @@ module powerbi.extensibility.visual {
 
             this.$start = this.createInputElement($startControl);
             this.$end = this.createInputElement($endControl);
-
 
             let slicerContainer: Selection<any> = d3.select(this.$root.get(0))
                 .append('div')
@@ -896,7 +837,6 @@ module powerbi.extensibility.visual {
 
             callbacks.applyAdvancedFilter = (filter: IAdvancedFilter): void => {
                 this.visualHost.applyJsonFilter(filter, "general", "filter", FilterAction.merge );
-                this.currentFilter = filter;
             };
 
             callbacks.getAdvancedFilterColumnTarget = (): IFilterColumnTarget => {

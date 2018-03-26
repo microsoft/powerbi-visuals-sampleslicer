@@ -103,14 +103,9 @@ module powerbi.extensibility.visual {
         }
 
         public clearAllDiscreteSelections() {
-            try {
             /* update state to clear all selections */
-                if (this.selectionHandler) {
-                    this.selectionHandler.handleClearSelection();
-                }
-            }
-            catch (ex) {
-
+            if (this.selectionHandler) {
+                this.selectionHandler.handleClearSelection();
             }
         }
 
@@ -156,7 +151,6 @@ module powerbi.extensibility.visual {
 
             let filter: IAdvancedFilter = new window['powerbi-models'].AdvancedFilter(target, "And", conditions);
             this.callbacks.applyAdvancedFilter(filter);
-            console.log('saved', filter.conditions);
         }
     }
 }
