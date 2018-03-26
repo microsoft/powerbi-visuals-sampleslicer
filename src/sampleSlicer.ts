@@ -51,6 +51,9 @@ module powerbi.extensibility.visual {
     import TextProperties = powerbi.extensibility.utils.formatting.TextProperties;
     import textMeasurementService = powerbi.extensibility.utils.formatting.textMeasurementService;
 
+    import FilterManager = powerbi.extensibility.utils.filter.FilterManager;
+    import AppliedFilter = powerbi.extensibility.utils.filter.AppliedFilter;
+
     export const enum RangeValueType {
         Start,
         End
@@ -71,7 +74,6 @@ module powerbi.extensibility.visual {
 
     export interface SampleSlicerCallbacks {
         getPersistedSelectionState?: () => powerbi.extensibility.ISelectionId[];
-        persistSelectionState?: (selectionIds: string[]) => void;
         restorePersistedRangeSelectionState?: () => void;
         applyAdvancedFilter?: (filter: IAdvancedFilter) => void;
         getAdvancedFilterColumnTarget?: () => IFilterColumnTarget;
@@ -115,6 +117,8 @@ module powerbi.extensibility.visual {
 
         private behavior: SelectionBehavior;
         private settings: Settings;
+
+        private currentFilter: IAdvancedFilter;
 
         public static DefaultFontFamily: string = "helvetica, arial, sans-serif";
         public static DefaultFontSizeInPt: number = 11;
@@ -166,6 +170,7 @@ module powerbi.extensibility.visual {
                 slicerSettings.general.selection = DataViewObjectsModule.getValue(dataView.metadata.objects, persistedSettingsDataViewObjectPropertyIdentifiers.general.selection, defaultSettings.general.selection);
                 slicerSettings.general.rangeSelectionStart = DataViewObjectsModule.getValue(dataView.metadata.objects, persistedSettingsDataViewObjectPropertyIdentifiers.general.rangeSelectionStart, defaultSettings.general.selection);
                 slicerSettings.general.rangeSelectionEnd = DataViewObjectsModule.getValue(dataView.metadata.objects, persistedSettingsDataViewObjectPropertyIdentifiers.general.rangeSelectionEnd, defaultSettings.general.selection);
+                slicerSettings.general.filter = DataViewObjectsModule.getValue(dataView.metadata.objects, persistedSettingsDataViewObjectPropertyIdentifiers.general.filter, defaultSettings.general.filter);
             }
 
             if (searchText) {
@@ -194,20 +199,6 @@ module powerbi.extensibility.visual {
             this.interactivityService = createInteractivityService(options.host);
 
             this.settings = defaultSettings;
-
-            Object.defineProperty(window, "pageXOffset", {
-                get: function () {
-                    return window.window.pageXOffset;
-                }
-            });
-
-            Object.defineProperty(window, "pageYOffset", {
-                get: function () {
-                    return window.window.pageYOffset;
-                }
-            });
-
-
         }
 
         public update(options: VisualUpdateOptions) {
@@ -293,6 +284,115 @@ module powerbi.extensibility.visual {
             return [];
         }
 
+        private checkFilter(filter: IAdvancedFilter): boolean {
+            if (!this.currentFilter) {
+                return false;
+            }
+
+            if (filter) {
+                if (SampleSlicer.compareFilter(filter, this.currentFilter)) {
+                    this.currentFilter = filter;
+                    return true;
+                }
+                return false;
+            }
+
+            if (!this.currentFilter && filter) {
+                this.currentFilter = filter;
+            } else {
+                this.currentFilter = null;
+            }
+            return true;
+        }
+
+        public static compareFilter(filterA: IAdvancedFilter, filterB: IAdvancedFilter): boolean {
+            if (filterA.$schema !== filterB.$schema) {
+                return false;
+            }
+            if (filterA.logicalOperator !== filterB.logicalOperator) {
+                return false;
+            }
+            if (filterA.target &&
+                filterB.target &&
+                filterA.target.table !== filterB.target.table) {
+                return false;
+            }
+            if (filterA.conditions &&
+                filterB.conditions &&
+                filterA.conditions.length !== filterB.conditions.length) {
+                return false;
+            }
+            if (filterA.conditions && filterB.conditions) {
+                return filterA.conditions.every((conditionA: IAdvancedFilterCondition) => {
+                    return filterB.conditions.some((conditionB: IAdvancedFilterCondition) => {
+                        return conditionB.operator === conditionB.operator && conditionA.value === conditionB.value;
+                    });
+                });
+            }
+
+            return false;
+        }
+
+        private restoreFilter(data: SampleSlicerData) {
+            let restoredFilter: IAdvancedFilter =
+            FilterManager.restoreFilter(data && data.slicerSettings.general.filter) as IAdvancedFilter;
+            if (restoredFilter) {
+                restoredFilter.target = this.getCallbacks().getAdvancedFilterColumnTarget();
+                if (this.checkFilter(restoredFilter) || true) {
+                    // reset to default
+                    // this.onRangeInputTextboxChange("", RangeValueType.Start, true);
+                    // this.onRangeInputTextboxChange("", RangeValueType.End, true);
+                    // change value to correspond the filter values
+                    // in some case we can get value with one condition only
+                    if (restoredFilter.conditions.length === 1) {
+                        let value: {
+                            max?: any,
+                            min?: any
+                        } = {};
+
+                        let convertedValues = data.slicerDataPoints.map( (dataPoint: SampleSlicerDataPoint) => +dataPoint.category );
+                        value.min = d3.min(convertedValues);
+                        value.max = d3.max(convertedValues);
+
+                        let operator = restoredFilter.conditions[0].operator;
+                        if (operator === "LessThanOrEqual" || operator === "LessThan") {
+                            restoredFilter.conditions.push({
+                                operator: "GreaterThan",
+                                value: value.min
+                            });
+                        }
+                        if (operator === "GreaterThanOrEqual" || operator === "GreaterThan") {
+                            restoredFilter.conditions.push({
+                                operator: "LessThan",
+                                value: value.max
+                            });
+                        }
+                    }
+                    console.log('Restored', restoredFilter.conditions);
+
+                    let rangeValue: ValueRange<number> = <ValueRange<number>>{};
+
+                    restoredFilter.conditions.forEach( (condition: IAdvancedFilterCondition) => {
+                        let value = condition.value;
+                        let operator = condition.operator;
+                        let rangeType: RangeValueType;
+                        if (operator === "LessThanOrEqual" || operator === "LessThan") {
+                            rangeType = RangeValueType.End;
+                            rangeValue.max = <number>value;
+                        }
+                        if (operator === "GreaterThanOrEqual" || operator === "GreaterThan") {
+                            rangeType = RangeValueType.Start;
+                            rangeValue.min = <number>value;
+                        }
+                    });
+
+                    this.behavior.scalableRange.setValue(rangeValue);
+                    this.onRangeInputTextboxChange(rangeValue.min.toString(), RangeValueType.Start);
+                    this.onRangeInputTextboxChange(rangeValue.max.toString(), RangeValueType.End);
+                }
+            }
+        }
+
         private updateInternal(resetScrollbarPosition: boolean) {
             // convert data to internal representation
             let data = SampleSlicer.converter(
@@ -306,6 +406,8 @@ module powerbi.extensibility.visual {
 
                 return;
             }
+
+            this.restoreFilter(data);
 
             if (this.slicerData) {
                 if (this.isSelectionSaved) {
@@ -541,7 +643,7 @@ module powerbi.extensibility.visual {
             return value != null ? valueFormatter.format(value, "#") : '';
         }
 
-        private onRangeInputTextboxChange(inputString: string, rangeValueType: RangeValueType): void {
+        private onRangeInputTextboxChange(inputString: string, rangeValueType: RangeValueType, supressFilter: boolean = false): void {
             // parse input
             let inputValue: number;
             if (!inputString) {
@@ -567,10 +669,13 @@ module powerbi.extensibility.visual {
                 }
                 range.max = inputValue;
             }
-            this.behavior.scalableRange.setValue(range);
 
-            // trigger range change processing
-            this.behavior.updateOnRangeSelectonChange();
+            if (!supressFilter) {
+                this.behavior.scalableRange.setValue(range);
+
+                // trigger range change processing
+                this.behavior.updateOnRangeSelectonChange();
+            }
         }
 
         private enterSelection(rowSelection: Selection<any>): void {
@@ -783,8 +888,6 @@ module powerbi.extensibility.visual {
                 : textMeasurementService.estimateSvgTextHeight(SampleSlicer.getSampleTextProperties(textSettings.textSize));
         }
 
-
-
         /**
          *  Callbacks consumed by the SelectionBehavior class
          * */
@@ -792,7 +895,8 @@ module powerbi.extensibility.visual {
             let callbacks: SampleSlicerCallbacks = {};
 
             callbacks.applyAdvancedFilter = (filter: IAdvancedFilter): void => {
-                this.visualHost.applyJsonFilter(filter, "general", "filter");
+                this.visualHost.applyJsonFilter(filter, "general", "filter", FilterAction.merge );
+                this.currentFilter = filter;
             };
 
             callbacks.getAdvancedFilterColumnTarget = (): IFilterColumnTarget => {
@@ -804,35 +908,6 @@ module powerbi.extensibility.visual {
                 };
 
                 return target;
-            };
-
-            callbacks.persistSelectionState = (selectionIds: string[]): void => {
-                this.visualHost.persistProperties(<VisualObjectInstancesToPersist>{
-                    merge: [{
-                        objectName: "general",
-                        selector: null,
-                        properties: {
-                            selection: selectionIds && JSON.stringify(selectionIds) || "",
-                            rangeSelectionStart: JSON.stringify(this.formatValue(this.behavior.scalableRange.getValue().min)),
-                            rangeSelectionEnd: JSON.stringify(this.formatValue(this.behavior.scalableRange.getValue().max))
-                        }
-                    }]
-                });
-                this.isSelectionSaved = true;
-            };
-
-            callbacks.restorePersistedRangeSelectionState = (): void => {
-                let rangeSelectionStart: string = JSON.parse(this.slicerData.slicerSettings.general.rangeSelectionStart);
-                let rangeSelectionEnd: string = JSON.parse(this.slicerData.slicerSettings.general.rangeSelectionEnd);
-
-                if (rangeSelectionStart) {
-                    this.$start.val(rangeSelectionStart);
-                    this.onRangeInputTextboxChange(rangeSelectionStart, RangeValueType.Start);
-                }
-                if (rangeSelectionEnd) {
-                    this.$end.val(rangeSelectionEnd);
-                    this.onRangeInputTextboxChange(rangeSelectionEnd, RangeValueType.End);
-                }
             };
 
             callbacks.getPersistedSelectionState = (): powerbi.extensibility.ISelectionId[] => {
