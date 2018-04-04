@@ -8,7 +8,7 @@ For <b>discrete</b> cross-visual data-point selection the Sample Slicer visual r
 
 ISelectionHandler holds the state of all discrete (possibly multiple) data-point selections. The handler is updated on each data-point selection event (each mouse click) and does NOT automatically propagate the event to the hosting application. The selection state is only propagated to the host when the method ISelectionHandler.applySelectionFilter() is invoked. 
 
-Below is the code executed on each slicer mouse click. The handler is updated with the select/unselect data point event and the complete discrete selection state is flushed to the hosting application. Additionally, the selection state is persisted to the visual's properties as applyed filter, so the next time the visual is loaded the selection can be restored. 
+Below is the code executed on each slicer mouse click. The handler is updated with the select/unselect data point event and the complete discrete selection state is flushed to the hosting application. Additionally, the selection state is persisted to the visual's properties as applyed filter, so the next time the visual is loaded the selection can be restored.
 
 ```
       /* update selection state */
