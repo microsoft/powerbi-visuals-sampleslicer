@@ -34,6 +34,7 @@ module powerbi.extensibility.visual {
             rangeSelectionEnd: string;
             multiselect: boolean;
             selection: string;
+            filter: any;
         };
         headerText: {
             marginLeft: number;
@@ -63,7 +64,8 @@ module powerbi.extensibility.visual {
             rangeSelectionStart: null,
             rangeSelectionEnd: null,
             multiselect: true,
-            selection: null
+            selection: null,
+            filter: null
         },
         headerText: {
             marginLeft: 8,
@@ -91,7 +93,8 @@ module powerbi.extensibility.visual {
             multiselect: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'multiselect' },
             selection: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'selection' },
             rangeSelectionStart: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'rangeSelectionStart' },
-            rangeSelectionEnd: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'rangeSelectionEnd' }
+            rangeSelectionEnd: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'rangeSelectionEnd' },
+            filter: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'filter' }
         }
     };
 

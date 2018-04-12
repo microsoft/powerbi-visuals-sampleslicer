@@ -37,3 +37,5 @@ pbiviz start
 3. Advanced selection with the Advanced Filter API
   - [Adding the Advanced Filter API to the project](doc/AddingAdvancedFilterAPI.md)
   - [Using the Advanced Filter API](doc/UsingAdvancedFilterAPI.md)
+4. Bookmarks support
+  - [Adding bookmarks support to the project](doc/AddingBookmarksSuppoprt.md)

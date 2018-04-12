@@ -74,10 +74,6 @@ module powerbi.extensibility.visual {
 
             this.selectionHandler = selectionHandler;
 
-            if (!this.options.isSelectionLoaded) {
-                this.restoreSelectionStateFromPersistedProperties();
-            }
-
             slicers.on("click", (dataPoint: SampleSlicerDataPoint, index: number) => {
                 (d3.event as MouseEvent).preventDefault();
 
@@ -88,9 +84,6 @@ module powerbi.extensibility.visual {
 
                 /* send selection state to the host*/
                 selectionHandler.applySelectionFilter();
-
-                /*persiste selection state to properties */
-                this.persistSelectionState();
             });
 
         }
@@ -110,55 +103,14 @@ module powerbi.extensibility.visual {
         }
 
         public clearAllDiscreteSelections() {
-
             /* update state to clear all selections */
-            this.selectionHandler.handleClearSelection();
-
-            /*persiste selection state to properties */
-            this.persistSelectionState();
+            if (this.selectionHandler) {
+                this.selectionHandler.handleClearSelection();
+            }
         }
 
         public clearRangeSelection(): void {
             this.scalableRange = new ScalableRange();
-        }
-
-
-        public restoreSelectionStateFromPersistedProperties(): void {
-            const savedSelectionIds: ISelectionId[] = this.callbacks.getPersistedSelectionState();
-
-            if (savedSelectionIds.length) {
-                /* clear selection state */
-                this.selectionHandler.handleClearSelection();
-
-                /* restore selection state from persisted properties */
-                this.dataPoints
-                    .filter(dataPoint => {
-                        return savedSelectionIds.some((selectionId: ISelectionId) => {
-                            return (dataPoint.identity as any).getKey() === selectionId;
-                        });
-                    })
-                    .forEach((dataPoint: SampleSlicerDataPoint) => {
-                        this.selectionHandler.handleSelection(dataPoint, true);
-                    });
-
-                /* send selection state to the host */
-                this.selectionHandler.applySelectionFilter();
-            } else {
-                this.callbacks.restorePersistedRangeSelectionState();
-            }
-        }
-
-        public persistSelectionState(): void {
-            let selectedIds: ISelectionId[],
-                selectionIdKeys: string[];
-
-            selectedIds = <ISelectionId[]>(<any>this.selectionHandler).selectedIds;
-
-            selectionIdKeys = selectedIds.map((selectionId: ISelectionId) => {
-                return (selectionId as any).getKey();
-            });
-
-            this.callbacks.persistSelectionState(selectionIdKeys);
         }
 
         public styleSlicerInputs(slicers: Selection<any>, hasSelection: boolean) {
