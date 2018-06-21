@@ -12,13 +12,6 @@ See a [demo PowerBI report](doc/SampleSlicer.pbix) to get an idea about the visu
 
 ![](doc/images/SampleSlicer.PNG)
 
-### Other fetures
-You can also see how to work with bookmarks and sync slicers.
-
-Bookmarks support was added in API 1.11. For details see section [Adding bookmarks support to the project](doc/AddingBookmarksSuppoprt.md)
-
-Sync slicer support was added in API 1.13. For details see section [Enable synchronization for a slicer](doc/SlicerSynchronizationSupport.md) and [demo PowerBI report with sync slicer](doc/SampleSlicerSync.pbix)
-
 ### Setting up the environment
 
 You will first need to set up your environment as detailed [here](https://github.com/Microsoft/PowerBI-visuals/blob/master/Readme.md#setting-up-environment).
@@ -47,4 +40,4 @@ pbiviz start
 4. Bookmarks support
   - [Adding bookmarks support to the project](doc/AddingBookmarksSuppoprt.md)
 5. Slicer synchronization support
-  - [Enable synchronization for a slicer](doc/SlicerSynchronizationSupport.md)
+  - [Enable Sync Slicers](doc/SlicerSynchronizationSupport.md)
