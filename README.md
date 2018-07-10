@@ -39,3 +39,5 @@ pbiviz start
   - [Using the Advanced Filter API](doc/UsingAdvancedFilterAPI.md)
 4. Bookmarks support
   - [Adding bookmarks support to the project](doc/AddingBookmarksSuppoprt.md)
+5. Slicer synchronization support
+  - [Enable Sync Slicers](doc/SlicerSynchronizationSupport.md)

@@ -244,6 +244,9 @@ _Pvt_Extensions
 .paket/paket.exe
 paket-files/
 
+# api folder will be added during API installation 
+.api/
+
 # FAKE - F# Make
 .fake/
 
