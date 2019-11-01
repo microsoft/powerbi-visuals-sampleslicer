@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "jquery": "^3.2.1",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.13",
     "nouislider": "^8.0.2",
     "powerbi-models": "^0.11.3",
     "powerbi-visuals-utils-colorutils": "^1.0.0",
