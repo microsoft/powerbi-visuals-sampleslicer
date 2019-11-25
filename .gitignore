@@ -254,3 +254,5 @@ paket-files/
 .idea/
 *.sln.iml
 *.pbiviz
+
+src/tmp*

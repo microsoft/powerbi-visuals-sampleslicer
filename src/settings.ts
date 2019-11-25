@@ -23,79 +23,77 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
+import powerbiVisualsApi from "powerbi-visuals-api";
+//import DataViewObjectPropertyIdentifier 
 
-module powerbi.extensibility.visual {
-
-    export interface Settings {
-        general: {
-            columns: number;
-            rows: number;
-            rangeSelectionStart: string;
-            rangeSelectionEnd: string;
-            multiselect: boolean;
-            selection: string;
-            filter: any;
-        };
-        headerText: {
-            marginLeft: number;
-            marginTop: number;
-        };
-        slicerText: {
-            textSize: number;
-            height: number;
-            width: number;
-            selectedColor: string;
-            hoverColor: string;
-            unselectedColor: string;
-            marginLeft: number;
-            transparency: number;
-            padding: number;
-        };
-        slicerItemContainer: {
-            marginTop: number;
-            marginLeft: number;
-        };
-    }
-
-    export let defaultSettings: Settings = {
-        general: {
-            columns: 3,
-            rows: 0,
-            rangeSelectionStart: null,
-            rangeSelectionEnd: null,
-            multiselect: true,
-            selection: null,
-            filter: null
-        },
-        headerText: {
-            marginLeft: 8,
-            marginTop: 0
-        },
-        slicerText: {
-            textSize: 10,
-            height: 0,
-            width: 0,
-            hoverColor: '#212121',
-            selectedColor: '#BDD7EE',
-            unselectedColor: '#ffffff',
-            marginLeft: 8,
-            transparency: 0,
-            padding: 3
-        },
-        slicerItemContainer: {
-            marginTop: 5,
-            marginLeft: 0,
-        }
+export interface Settings {
+    general: {
+        columns: number;
+        rows: number;
+        rangeSelectionStart: string;
+        rangeSelectionEnd: string;
+        multiselect: boolean;
+        selection: string;
+        filter: any;
     };
-
-    export let persistedSettingsDataViewObjectPropertyIdentifiers = {
-        general: {
-            multiselect: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'multiselect' },
-            selection: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'selection' },
-            rangeSelectionStart: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'rangeSelectionStart' },
-            rangeSelectionEnd: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'rangeSelectionEnd' },
-            filter: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'filter' }
-        }
+    headerText: {
+        marginLeft: number;
+        marginTop: number;
     };
-
+    slicerText: {
+        textSize: number;
+        height: number;
+        width: number;
+        selectedColor: string;
+        hoverColor: string;
+        unselectedColor: string;
+        marginLeft: number;
+        transparency: number;
+        padding: number;
+    };
+    slicerItemContainer: {
+        marginTop: number;
+        marginLeft: number;
+    };
 }
+
+export let defaultSettings: Settings = {
+    general: {
+        columns: 3,
+        rows: 0,
+        rangeSelectionStart: null,
+        rangeSelectionEnd: null,
+        multiselect: true,
+        selection: null,
+        filter: null
+    },
+    headerText: {
+        marginLeft: 8,
+        marginTop: 0
+    },
+    slicerText: {
+        textSize: 10,
+        height: 0,
+        width: 0,
+        hoverColor: '#212121',
+        selectedColor: '#BDD7EE',
+        unselectedColor: '#ffffff',
+        marginLeft: 8,
+        transparency: 0,
+        padding: 3
+    },
+    slicerItemContainer: {
+        marginTop: 5,
+        marginLeft: 0,
+    }
+};
+
+export let persistedSettingsDataViewObjectPropertyIdentifiers = {
+    general: {
+        multiselect: { objectName: 'general', propertyName: 'multiselect' }, // TMP <DataViewObjectPropertyIdentifier>
+        selection: { objectName: 'general', propertyName: 'selection' }, // TMP <DataViewObjectPropertyIdentifier>
+        rangeSelectionStart: { objectName: 'general', propertyName: 'rangeSelectionStart' }, // TMP <DataViewObjectPropertyIdentifier>
+        rangeSelectionEnd: { objectName: 'general', propertyName: 'rangeSelectionEnd' }, // TMP <DataViewObjectPropertyIdentifier>
+        filter: { objectName: 'general', propertyName: 'filter' } // TMP <DataViewObjectPropertyIdentifier>
+    }
+};

@@ -24,133 +24,156 @@
  *  THE SOFTWARE.
  */
 
-module powerbi.extensibility.visual {
-    // d3
-    import Selection = d3.Selection;
+// d3
+import {
+  select as d3Select,
+  event as d3Event,
+  Selection as D3Selection,
+} from "d3";
 
-    // powerbi.extensibility.utils.interactivity
-    import ISelectionHandler = powerbi.extensibility.utils.interactivity.ISelectionHandler;
-    import SelectableDataPoint = powerbi.extensibility.utils.interactivity.SelectableDataPoint;
-    import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
-    import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
+type Selection<T> = D3Selection<any, T, any, any>;
 
-    export interface SampleSlicerBehaviorOptions {
-        slicerItemContainers: Selection<SelectableDataPoint>;
-        dataPoints: SampleSlicerDataPoint[];
-        interactivityService: IInteractivityService;
-        slicerSettings: Settings;
-        isSelectionLoaded: boolean;
+import {
+  IAdvancedFilter,
+  IAdvancedFilterCondition,
+  IFilterColumnTarget,
+} from "powerbi-models";
+
+import powerbiVisualsApi from "powerbi-visuals-api";
+import ValueRange = powerbiVisualsApi.ValueRange;
+
+import {
+  interactivityBaseService,
+  interactivitySelectionService,
+} from "powerbi-visuals-utils-interactivityutils";
+
+import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
+import IInteractivityService = interactivityBaseService.IInteractivityService;
+import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
+import IBehaviorOptions = interactivityBaseService.IBehaviorOptions;
+import ISelectionHandler = interactivityBaseService.ISelectionHandler;
+
+import { Settings } from "./settings";
+import { ScalableRange } from "./scalableRange";
+import { SampleSlicerBehaviorOptions } from "./selectionBehavior";
+import { SampleSlicerDataPoint, SampleSlicerCallbacks } from "./sampleSlicer";
+
+export interface SampleSlicerBehaviorOptions extends IBehaviorOptions<any>{
+    slicerItemContainers: Selection<SelectableDataPoint>;
+    dataPoints: SampleSlicerDataPoint[];
+    interactivityService: IInteractivityService<any>;
+    slicerSettings: Settings;
+    isSelectionLoaded: boolean;
+}
+
+export class SelectionBehavior implements IInteractiveBehavior {
+    /* discrete selection model*/
+    private selectionHandler: ISelectionHandler;
+    /* range selection model*/
+    public scalableRange: ScalableRange;
+
+    private slicers: Selection<SelectableDataPoint>;
+    private interactivityService: IInteractivityService<any>;
+    private slicerSettings: Settings;
+    private options: SampleSlicerBehaviorOptions;
+    private dataPoints: SampleSlicerDataPoint[];
+    private callbacks: SampleSlicerCallbacks;
+
+    constructor(callbacks: SampleSlicerCallbacks) {
+        this.scalableRange = new ScalableRange();
+        this.callbacks = callbacks;
     }
 
-    export class SelectionBehavior implements IInteractiveBehavior {
-        /* discrete selection model*/
-        private selectionHandler: ISelectionHandler;
-        /* range selection model*/
-        public scalableRange: ScalableRange;
 
-        private slicers: Selection<SelectableDataPoint>;
-        private interactivityService: IInteractivityService;
-        private slicerSettings: Settings;
-        private options: SampleSlicerBehaviorOptions;
-        private dataPoints: SampleSlicerDataPoint[];
-        private callbacks: SampleSlicerCallbacks;
+    /**
+        Implementation of IInteractiveBehavior i/f
+    */
+    public bindEvents(options: SampleSlicerBehaviorOptions, selectionHandler: ISelectionHandler): void {
+        const slicers: Selection<SelectableDataPoint> = this.slicers = options.slicerItemContainers;
 
-        constructor(callbacks: SampleSlicerCallbacks) {
-            this.scalableRange = new ScalableRange();
-            this.callbacks = callbacks;
+        this.dataPoints = options.dataPoints;
+        this.interactivityService = options.interactivityService;
+        this.slicerSettings = options.slicerSettings;
+        this.options = options;
+
+        this.selectionHandler = selectionHandler;
+
+        slicers.on("click", (dataPoint: SampleSlicerDataPoint, index: number) => {
+            (d3Event as MouseEvent).preventDefault();
+
+            this.clearRangeSelection();
+
+            /* update selection state */
+            selectionHandler.handleSelection(dataPoint, true /* isMultiSelect */);
+
+            /* send selection state to the host*/
+            //selectionHandler.applySelectionFilter(); // TMP 
+        });
+
+    }
+
+    /**
+        Implementation of IInteractiveBehavior i/f
+    */
+    public renderSelection(hasSelection: boolean): void {
+        if (!hasSelection && !this.interactivityService.isSelectionModeInverted()) {
+            this.slicers.style(
+                "background",
+                this.slicerSettings.slicerText.unselectedColor);
+        }
+        else {
+            this.styleSlicerInputs(this.slicers, hasSelection);
+        }
+    }
+
+    public clearAllDiscreteSelections() {
+        /* update state to clear all selections */
+        if (this.selectionHandler) {
+            this.selectionHandler.handleClearSelection();
+        }
+    }
+
+    public clearRangeSelection(): void {
+        this.scalableRange = new ScalableRange();
+    }
+
+    public styleSlicerInputs(slicers: Selection<any>, hasSelection: boolean) {
+        let settings = this.slicerSettings;
+        slicers.each(function (dataPoint: SampleSlicerDataPoint) {
+            d3Select(this)
+                .style("background", (dataPoint.selected || dataPoint.isSelectedRangePoint)
+                    ? settings.slicerText.selectedColor
+                    : settings.slicerText.unselectedColor
+                );
+        });
+    }
+
+    public updateOnRangeSelectonChange(): void {
+        this.clearAllDiscreteSelections();
+
+        let value: ValueRange<number> = this.scalableRange.getValue();
+        if (!value.min && !value.max) {
+            return;
         }
 
+        let conditions: IAdvancedFilterCondition[] = [];
+        let target: IFilterColumnTarget = this.callbacks.getAdvancedFilterColumnTarget();
 
-        /**
-            Implementation of IInteractiveBehavior i/f
-        */
-        public bindEvents(options: SampleSlicerBehaviorOptions, selectionHandler: ISelectionHandler): void {
-            const slicers: Selection<SelectableDataPoint> = this.slicers = options.slicerItemContainers;
-
-            this.dataPoints = options.dataPoints;
-            this.interactivityService = options.interactivityService;
-            this.slicerSettings = options.slicerSettings;
-            this.options = options;
-
-            this.selectionHandler = selectionHandler;
-
-            slicers.on("click", (dataPoint: SampleSlicerDataPoint, index: number) => {
-                (d3.event as MouseEvent).preventDefault();
-
-                this.clearRangeSelection();
-
-                /* update selection state */
-                selectionHandler.handleSelection(dataPoint, true /* isMultiSelect */);
-
-                /* send selection state to the host*/
-                selectionHandler.applySelectionFilter();
+        if (value.min) {
+            conditions.push({
+                operator: "GreaterThan",
+                value: value.min
             });
-
         }
 
-        /**
-            Implementation of IInteractiveBehavior i/f
-        */
-        public renderSelection(hasSelection: boolean): void {
-            if (!hasSelection && !this.interactivityService.isSelectionModeInverted()) {
-                this.slicers.style(
-                    "background",
-                    this.slicerSettings.slicerText.unselectedColor);
-            }
-            else {
-                this.styleSlicerInputs(this.slicers, hasSelection);
-            }
-        }
-
-        public clearAllDiscreteSelections() {
-            /* update state to clear all selections */
-            if (this.selectionHandler) {
-                this.selectionHandler.handleClearSelection();
-            }
-        }
-
-        public clearRangeSelection(): void {
-            this.scalableRange = new ScalableRange();
-        }
-
-        public styleSlicerInputs(slicers: Selection<any>, hasSelection: boolean) {
-            let settings = this.slicerSettings;
-            slicers.each(function (dataPoint: SampleSlicerDataPoint) {
-                d3.select(this).style({
-                    "background": (dataPoint.selected || dataPoint.isSelectedRangePoint)
-                        ? settings.slicerText.selectedColor
-                        : settings.slicerText.unselectedColor
-                });
+        if (value.max) {
+            conditions.push({
+                operator: "LessThan",
+                value: value.max
             });
         }
 
-        public updateOnRangeSelectonChange(): void {
-            this.clearAllDiscreteSelections();
-
-            let value: ValueRange<number> = this.scalableRange.getValue();
-            if (!value.min && !value.max) {
-                return;
-            }
-
-            let conditions: IAdvancedFilterCondition[] = [];
-            let target: IFilterColumnTarget = this.callbacks.getAdvancedFilterColumnTarget();
-
-            if (value.min) {
-                conditions.push({
-                    operator: "GreaterThan",
-                    value: value.min
-                });
-            }
-
-            if (value.max) {
-                conditions.push({
-                    operator: "LessThan",
-                    value: value.max
-                });
-            }
-
-            let filter: IAdvancedFilter = new window['powerbi-models'].AdvancedFilter(target, "And", conditions);
-            this.callbacks.applyAdvancedFilter(filter);
-        }
+        let filter: IAdvancedFilter = new window['powerbi-models'].AdvancedFilter(target, "And", conditions);
+        this.callbacks.applyAdvancedFilter(filter);
     }
 }
