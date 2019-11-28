@@ -3,16 +3,12 @@
     "allowJs": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "module": "es2015",
-    "target": "es2015",
+    "module": "es6",
+    "target": "es6",
     "sourceMap": true,
     "outDir": "./.tmp/build/",
     "moduleResolution": "node",
-    "declaration": true,
-    "lib": [
-      "es2015",
-      "dom"
-    ]
+    "declaration": true
   },
   "files": [
     "src/sampleSlicer.ts"

@@ -24,7 +24,7 @@
  *  THE SOFTWARE.
  */
 import powerbiVisualsApi from "powerbi-visuals-api";
-//import DataViewObjectPropertyIdentifier 
+import DataViewObjectPropertyIdentifier = powerbiVisualsApi.DataViewObjectPropertyIdentifier;
 
 export interface Settings {
     general: {
@@ -90,10 +90,10 @@ export let defaultSettings: Settings = {
 
 export let persistedSettingsDataViewObjectPropertyIdentifiers = {
     general: {
-        multiselect: { objectName: 'general', propertyName: 'multiselect' }, // TMP <DataViewObjectPropertyIdentifier>
-        selection: { objectName: 'general', propertyName: 'selection' }, // TMP <DataViewObjectPropertyIdentifier>
-        rangeSelectionStart: { objectName: 'general', propertyName: 'rangeSelectionStart' }, // TMP <DataViewObjectPropertyIdentifier>
-        rangeSelectionEnd: { objectName: 'general', propertyName: 'rangeSelectionEnd' }, // TMP <DataViewObjectPropertyIdentifier>
-        filter: { objectName: 'general', propertyName: 'filter' } // TMP <DataViewObjectPropertyIdentifier>
+        multiselect: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'multiselect' }, 
+        selection: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'selection' }, 
+        rangeSelectionStart: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'rangeSelectionStart' }, 
+        rangeSelectionEnd: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'rangeSelectionEnd' },
+        filter: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'filter' } 
     }
 };

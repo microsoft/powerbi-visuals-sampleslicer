@@ -107,7 +107,7 @@ export class SelectionBehavior implements IInteractiveBehavior {
             selectionHandler.handleSelection(dataPoint, true /* isMultiSelect */);
 
             /* send selection state to the host*/
-            //selectionHandler.applySelectionFilter(); // TMP 
+            // selectionHandler.applySelectionFilter(); // TMP comment bc applySelectionFilter
         });
 
     }

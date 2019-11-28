@@ -83,6 +83,7 @@ export interface TableViewComputedOptions {
     rows: number;
 }
 
+
 /**
  * A UI Virtualized List, that uses the D3 Enter, Update & Exit pattern to update rows.
  * It can create lists containing either HTML or SVG elements.
@@ -107,7 +108,7 @@ export class TableView implements ITableView {
 
     public constructor(options: TableViewViewOptions) {
         // make a copy of options so that it is not modified later by caller
-        this.options = $.extend(true, {}, options);
+        this.options = { ...options }; // TMP JQUERY $.extend(true, {}, options);
 
         this.options.baseContainer
             .style('overflow-y', 'auto')
@@ -170,7 +171,7 @@ export class TableView implements ITableView {
         this.setTotalRows();
 
         if (dataReset) {
-            $(this.options.baseContainer.node()).scrollTop(0);
+            //$(this.options.baseContainer.node()).scrollTop(0); // TMP JQUERY
         }
 
         return this;
