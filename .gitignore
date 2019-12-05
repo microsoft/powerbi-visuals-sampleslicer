@@ -255,4 +255,16 @@ paket-files/
 *.sln.iml
 *.pbiviz
 
+# Power BI
 src/tmp*
+dist
+
+.DS_Store
+
+typings
+.api
+*.log
+coverage
+
+# webpack 
+webpack.statistics.*

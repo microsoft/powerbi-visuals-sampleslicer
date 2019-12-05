@@ -27,6 +27,7 @@
 // "use strict";
 import "../style/sampleSlicer.less";
 import isEqual from "lodash.isequal";
+import * as noUiSlider from "nouislider";
 
 // d3
 import {
@@ -62,7 +63,7 @@ import VisualObjectInstanceEnumeration = powerbiVisualsApi.VisualObjectInstanceE
 import EnumerateVisualObjectInstancesOptions = powerbiVisualsApi.EnumerateVisualObjectInstancesOptions;
 import VisualObjectInstancesToPersist = powerbiVisualsApi.VisualObjectInstancesToPersist;
 
-import DataViewScopeIdentity = powerbiVisualsApi.DataViewScopeIdentity;
+//TMP 2.5 import DataViewScopeIdentity = powerbiVisualsApi.DataViewScopeIdentity;
 import DataViewObjectPropertyIdentifier = powerbiVisualsApi.DataViewObjectPropertyIdentifier;
 
 // import IVisualEventService = powerbiVisualsApi.extensibility.IVisualEventService;
@@ -71,7 +72,7 @@ import IVisual = powerbiVisualsApi.extensibility.visual.IVisual; // powerbiVisua
 import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
 import VisualUpdateOptions = powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
 import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
-import DataRepetitionSelector = powerbiVisualsApi.data.DataRepetitionSelector
+//TMP 2.5 import DataRepetitionSelector = powerbiVisualsApi.data.DataRepetitionSelector
 
 import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 
@@ -135,12 +136,10 @@ export interface SampleSlicerCallbacks {
 
 export class SampleSlicer implements IVisual {
 
-    // private $root: JQuery;
-    private root: HTMLElement; //TMP
-    // private $searchHeader: JQuery;
-    private searchHeader: HTMLElement; //TMP
-    // private $searchInput: JQuery;
-    private searchInput: HTMLElement; //TMP
+    private root: HTMLElement; 
+    private searchHeader: HTMLElement; 
+    
+    private searchInput: HTMLElement; 
     private currentViewport: IViewport;
     private dataView: DataView;
     private slicerHeader: Selection<any>;
@@ -158,18 +157,17 @@ export class SampleSlicer implements IVisual {
     private rangeBody: Selection<any>;
     private startContainer: Selection<any>;
     private endContainer: Selection<any>;
-    // private $start: JQuery;
-    private start: any; // TMP not jquery, any
-    // private $end: JQuery;
-    private end: any; // TMP not jquery, any
-    // private $sliderElement: JQuery;
-    private sliderElement: any; // TMP not jquery, any
+    
+    private start: any;
+    private end: any;
+    
+    private sliderElement: any;
     private slider: noUiSlider.noUiSlider;
 
     private tableView: ITableView;
     private slicerData: SampleSlicerData;
 
-    private interactivityService: IInteractivityService<any>; // TMP <any>
+    private interactivityService: IInteractivityService<any>;
     // private eventService: IVisualEventService;
 
     private visualHost: IVisualHost;
@@ -262,7 +260,6 @@ export class SampleSlicer implements IVisual {
     //===============================================================================================================================
 
     constructor(options: VisualConstructorOptions) {
-        //  this.$root = $(options.element); // TMP JQUERY
         this.root = options.element;
 
         this.visualHost = options.host;
@@ -270,7 +267,7 @@ export class SampleSlicer implements IVisual {
         this.interactivityService = createInteractivityService(options.host);
 
         this.settings = defaultSettings;
-        // this.eventService = options.host.eventService;
+        // this.eventService = options.host.eventService; 
     }
 
     //===============================================================================================================================
@@ -285,43 +282,43 @@ export class SampleSlicer implements IVisual {
         }
         
         // this.eventService.renderingStarted(options);
+        console.log('update options.viewport', options.viewport, '\n this.currentViewport', this.currentViewport );
 
         // create viewport if not yet created
         if (!this.currentViewport) {
           this.currentViewport = options.viewport;
-          console.log('tmp 1');
           this.initContainer();
-          console.warn('TMP 1 initContainer');
         }
         
         // update dataview
         const existingDataView = this.dataView;
         this.dataView = options.dataViews[0];
-        console.log("TMP UPDATE THIS DATAVIEW", this.dataView);
+        console.warn("UPDATE, this.dataView", this.dataView, '\n existingDataView', existingDataView);
 
         // check if the dataView changed to determine if scrollbars need to be reset
         let resetScrollbarPosition: boolean = true;
         if (existingDataView) {
-          console.log('tmp 2');
           resetScrollbarPosition = !SampleSlicer.hasSameCategoryIdentity(existingDataView, this.dataView);
-          console.warn('TMP 2 hasSameCategoryIdentity');
         }
+        
+        console.log(
+          'SampleSlicer.hasSameCategoryIdentity(existingDataView, this.dataView)', 
+          SampleSlicer.hasSameCategoryIdentity(existingDataView, this.dataView)
+        );
 
         // update viewport
         if (options.viewport.height === this.currentViewport.height
             && options.viewport.width === this.currentViewport.width) {
-                this.waitingForData = false;
+            console.log('UPD viewport 1');
+            this.waitingForData = false;
         }
         else {
+            console.log('UPD viewport 2');
             this.currentViewport = options.viewport;
         }
-        console.warn('TMP 3');
-
+        console.log('update calls updateInternal: \n resetScrollbarPosition', resetScrollbarPosition)
         this.updateInternal(resetScrollbarPosition);
-        
-        console.warn('TMP 4 updateInternal');
         // this.eventService.renderingFinished(options);
-
     }
 
     private static hasSameCategoryIdentity(dataView1: DataView, dataView2: DataView): boolean {
@@ -342,8 +339,8 @@ export class SampleSlicer implements IVisual {
         }
 
         for (let i: number = 0, len: number = dv1Categories.length; i < len; i++) {
-            let dv1Identity: DataViewScopeIdentity[] = (<DataViewCategoryColumn>dv1Categories[i]).identity;
-            let dv2Identity: DataViewScopeIdentity[] = (<DataViewCategoryColumn>dv2Categories[i]).identity;
+            let dv1Identity: any[] = (<DataViewCategoryColumn>dv1Categories[i]).identity; // TMP : DataViewScopeIdentity[
+            let dv2Identity: any[] = (<DataViewCategoryColumn>dv2Categories[i]).identity; // TMP : DataViewScopeIdentity[
 
             let dv1Length: number = this.getLengthOptional(dv1Identity);
             if ((dv1Length < 1) || dv1Length !== this.getLengthOptional(dv2Identity)) {
@@ -360,7 +357,7 @@ export class SampleSlicer implements IVisual {
         return true;
     }
 
-    private static getLengthOptional(identity: DataViewScopeIdentity[]): number { // TMP DataViewScopeIdentity == DataRepetitionSelector ?
+    private static getLengthOptional(identity: any[]): number { // TMP DataViewScopeIdentity == DataRepetitionSelector ? // TMP : DataViewScopeIdentity[
         if (identity) {
             return identity.length;
         }
@@ -373,59 +370,9 @@ export class SampleSlicer implements IVisual {
     }
 
     private restoreFilter(data: SampleSlicerData) {
-        // let restoredFilter: IAdvancedFilter =
-        //     FilterManager.restoreFilter(data && data.slicerSettings.general.filter) as IAdvancedFilter;
-
-        // if (restoredFilter) {
-        //     restoredFilter.target = this.getCallbacks().getAdvancedFilterColumnTarget();
-            
-        //     // reset to default
-        //     // this.onRangeInputTextboxChange("", RangeValueType.Start, true);
-        //     // this.onRangeInputTextboxChange("", RangeValueType.End, true);
-        //     // change value to correspond the filter values
-        //     // in some case we can get value with one condition only
-        //     if (restoredFilter.conditions.length === 1) {
-        //         let value: {
-        //             max?: any,
-        //             min?: any
-        //         } = {};
-
-        //         let convertedValues = data.slicerDataPoints.map( (dataPoint: SampleSlicerDataPoint) => +dataPoint.category );
-        //         value.min = d3min(convertedValues);
-        //         value.max = d3max(convertedValues);
-
-        //         let operator = restoredFilter.conditions[0].operator;
-        //         if (operator === "LessThanOrEqual" || operator === "LessThan") {
-        //             restoredFilter.conditions.push({
-        //                 operator: "GreaterThan",
-        //                 value: value.min
-        //             });
-        //         }
-        //         if (operator === "GreaterThanOrEqual" || operator === "GreaterThan") {
-        //             restoredFilter.conditions.push({
-        //                 operator: "LessThan",
-        //                 value: value.max
-        //             });
-        //         }
-        //     }
-
-        //     let rangeValue: ValueRange<number> = <ValueRange<number>>{};
-
-        //     restoredFilter.conditions.forEach( (condition: IAdvancedFilterCondition) => {
-        //         let value = condition.value;
-        //         let operator = condition.operator;
-        //         if (operator === "LessThanOrEqual" || operator === "LessThan") {
-        //             rangeValue.max = <number>value;
-        //         }
-        //         if (operator === "GreaterThanOrEqual" || operator === "GreaterThan") {
-        //             rangeValue.min = <number>value;
-        //         }
-        //     });
-
-        //     this.behavior.scalableRange.setValue(rangeValue);
-        //     this.onRangeInputTextboxChange(rangeValue.min.toString(), RangeValueType.Start);
-        //     this.onRangeInputTextboxChange(rangeValue.max.toString(), RangeValueType.End);
-        // }
+        console.log('> restoreFilter data', data);
+        // TODO
+        console.warn('TODO restoreFilter');
     }
 
     private updateInternal(resetScrollbarPosition: boolean) {
@@ -435,6 +382,8 @@ export class SampleSlicer implements IVisual {
             (<HTMLInputElement>this.searchInput).value, // TMP JQUERY this.$searchInput.val()
             this.behavior.scalableRange,
             this.visualHost);
+        
+        console.log('> updateInternal! \n data:', data);
 
         if (!data) {
             this.tableView.empty();
@@ -443,6 +392,10 @@ export class SampleSlicer implements IVisual {
         }
 
         this.restoreFilter(data);
+        
+        console.log(': this.slicerData', this.slicerData,
+          '\n selectionSaved ?', this.isSelectionSaved,
+          '\n selectionLoaded ?', this.isSelectionLoaded );
 
         if (this.slicerData) {
             if (this.isSelectionSaved) {
@@ -462,6 +415,8 @@ export class SampleSlicer implements IVisual {
         this.slicerBody
           .style('height', `${this.currentViewport.height - 120}px`);
 
+        console.log('this.tableView', this.tableView);
+
         // update tableView and render it
         this.tableView
             .rowHeight(height)
@@ -474,30 +429,30 @@ export class SampleSlicer implements IVisual {
             resetScrollbarPosition)
             .viewport(this.getSlicerBodyViewport(this.currentViewport))
             .render();
+        
+        console.log('this.tableView', this.tableView);
 
+        console.log('updateInternal > this.updateSliderControl');
         this.updateSliderControl();
+
+        console.log('updateInternal > this.updateSliderInputTextboxes');
         this.updateSliderInputTextboxes();
     }
 
-    // TMP ==============================================================================================================PUBLIC
     public createInputElement(control: HTMLElement): HTMLElement {
-      // let $element: JQuery = $('<input type="text"/>') // TMP JQUERY OK
-      //           .attr("type", "text")
-      //           .addClass(SampleSlicer.InputClass.className)
-      //           .appendTo(control);
-      //       return $element;
-      control.append(`<input type="text" class="${SampleSlicer.InputClass.className}"/>`) //No type
+      control.appendChild(
+        SampleSlicer.createElement(`<input type="text" class="${SampleSlicer.InputClass.className}"/>`)
+      );
       return control.querySelector("input");
     }
 
     private initContainer() {
         let settings: Settings = this.settings,
             slicerBodyViewport: IViewport = this.getSlicerBodyViewport(this.currentViewport);
-
+        
+        console.log('initContainer. Settings: ', settings, '\n slicerBodyViewport', slicerBodyViewport);
+        
         // Prevents visual container from doing any other actions on keypress
-        // this.$root.on('keyup keydown', (event: JQueryEventObject) => { // TMP JQUERY OK
-        //     event.stopPropagation();
-        // });
         this.root.addEventListener("keyup", (event: KeyboardEvent) => {
           event.stopPropagation()
         });
@@ -506,7 +461,7 @@ export class SampleSlicer implements IVisual {
           event.stopPropagation()
         });
 
-        this.rangeSlicer = d3Select(this.root) // TMP JQUERY OK this.$root.get(0) 
+        this.rangeSlicer = d3Select(this.root)
             .append('div')
             .classed(SampleSlicer.RangeSlicerSelector.className, true)
             .style('background', '#ffffff');
@@ -535,13 +490,13 @@ export class SampleSlicer implements IVisual {
             .append('div')
             .classed(SampleSlicer.RangeSlicerControlSelector.className, true);
 
-        let startControl = this.startControl.nodes()[0][0]; // TMP this.startControl[0][0];
-        let endControl  = this.endControl.nodes()[0][0]; // TMP this.endControl[0][0];
+        let startControl = this.startControl.nodes()[0]; 
+        let endControl  = this.endControl.nodes()[0]; 
         
         this.start = this.createInputElement(startControl);
         this.end = this.createInputElement(endControl);
 
-        let slicerContainer: Selection<any> = d3Select(this.root) // TMP JQUERY OK this.$root.get(0)
+        let slicerContainer: Selection<any> = d3Select(this.root)
             .append('div')
             .classed(SampleSlicer.ContainerSelector.className, true)
             .style('background', '#ffffff');
@@ -553,7 +508,8 @@ export class SampleSlicer implements IVisual {
             .style('margin-top', PixelConverter.toString(settings.headerText.marginTop))
 
         this.createSearchHeader(slicerContainer.node());  // TMP JQUERY TEST $(slicerContainer.node()) OK
-        
+
+        // SLICER BODY & TABLE VIEW
         this.slicerBody = slicerContainer
             .append('div')
             .classed(SampleSlicer.BodySelector.className, true)
@@ -583,73 +539,45 @@ export class SampleSlicer implements IVisual {
             viewport: this.getSlicerBodyViewport(this.currentViewport),
             baseContainer: this.slicerBody,
         };
-
+        
         this.bindHandlersToInputElements();
+        console.log('initContainer >/ bindHandlers ')
+        console.log('initContainer > TableViewFactory.createTableView(tableViewOptions) ', tableViewOptions);
         this.tableView = TableViewFactory.createTableView(tableViewOptions);
-
-        //TMP 
-        console.log("TMP WATCH", slicerContainer.node());
+        console.log('initContainer >/ TableViewFactory.createTableView');
     }
 
     private bindHandlersToInputElements(): void {
 
-        // this.$start.on("change", (event: JQueryEventObject) => {// TMP JQUERY
-        //     let inputString = this.$start.val();
-        //     this.onRangeInputTextboxChange(inputString.toString(), RangeValueType.Start); // TMP .toString()
-        // });
         this.start.addEventListener("change", (event: Event) => {
             const inputString: string = this.start.value;
             this.onRangeInputTextboxChange(inputString, RangeValueType.Start);
         });
-        
-        // this.$start.on("keyup", (event: JQueryEventObject) => {
-        //     if (event.keyCode === 13) {
-        //         let inputString = this.$start.val();
-        //         this.onRangeInputTextboxChange(inputString.toString(), RangeValueType.Start); // TMP .toString()
-        //     }
-        // });
+
         this.start.addEventListener("keyup", (event: KeyboardEvent) => {
             if (event.keyCode === 13) {
                 const inputString: string = this.start.value;
                 this.onRangeInputTextboxChange(inputString, RangeValueType.Start);
             }
         });
-        
-        // this.$start.on("focus", (event: JQueryEventObject) => {// TMP JQUERY
-        //     this.$start.val(this.formatValue(this.behavior.scalableRange.getValue().min));
-        //     this.$start.select();
-        // });
+
         this.start.addEventListener("focus", (event: Event) => {
             this.start.value = this.formatValue(this.behavior.scalableRange.getValue().min);
             this.start.select(); 
         });
 
-        // this.$end.on("change", (event: JQueryEventObject) => {// TMP JQUERY
-        //     let inputString = this.$end.val();
-        //     this.onRangeInputTextboxChange(inputString.toString(), RangeValueType.End); // TMP .toString()
-        // });
         this.end.addEventListener("change", (event: Event) => {
             const inputString: string = this.end.value;
             this.onRangeInputTextboxChange(inputString, RangeValueType.End);
         });
-        
-        // this.$end.on("keyup", (event: JQueryEventObject) => {// TMP JQUERY
-        //     if (event.keyCode === 13) {
-        //         let inputString = this.$end.val();
-        //         this.onRangeInputTextboxChange(inputString.toString(), RangeValueType.End); // TMP .toString()
-        //     }
-        // });
+
         this.end.addEventListener("keyup", (event: KeyboardEvent) => {
             if (event.keyCode === 13) {
                 const inputString: string = this.start.end;
                 this.onRangeInputTextboxChange(inputString, RangeValueType.End);
             }
         });
-        
-        // this.$end.on("focus", (event: JQueryEventObject) => {// TMP JQUERY
-        //     this.$end.val(this.formatValue(this.behavior.scalableRange.getValue().max));
-        //     this.$end.select();
-        // });
+
         this.end.addEventListener("focus", (event: Event) => {
             this.end.value = this.formatValue(this.behavior.scalableRange.getValue().max);
             this.end.select(); 
@@ -672,27 +600,27 @@ export class SampleSlicer implements IVisual {
         return options;
     }
 
-
     private updateSliderControl(): void {
-        // let sliderContainer: JQuery = $(this.rangeSlicerSlider[0][0]);// TMP JQUERY
-        let sliderContainer: HTMLElement = this.rangeSlicerSlider.nodes()[0][0];
+        let sliderContainer: HTMLElement = this.rangeSlicerSlider.nodes()[0];
+        console.warn('> updateSliderControl');
 
         if (!this.slider) {
             // create slider
-            // this.$sliderElement = $('<div/>') // TMP JQUERY
-            //     .appendTo($sliderContainer);
+            console.warn("Create slider");
+
             this.sliderElement = sliderContainer.appendChild(
                 SampleSlicer.createElement('<div />')
             );
-            
-            (<any>window).noUiSlider.create(this.sliderElement, this.createSliderOptions()); // TMP JQUERY this.$sliderElement.get(0)
 
-            this.slider = (<noUiSlider.Instance>this.sliderElement).noUiSlider; // TMP JQUERY this.$sliderElement.get(0)
+            noUiSlider.create(this.sliderElement, this.createSliderOptions());
+
+            this.slider = (<noUiSlider.Instance>this.sliderElement).noUiSlider;
 
             // populate slider event handlers
             this.slider.on("change", (data: any[], index: number, values: any) => {
                 this.behavior.scalableRange.setScaledValue({ min: values[0], max: values[1] });
                 this.behavior.updateOnRangeSelectonChange();
+                this.updateInternal(false);
             });
 
         } else {
@@ -703,24 +631,28 @@ export class SampleSlicer implements IVisual {
         }
     }
 
-   
     public updateSliderInputTextboxes(): void {
-        // this.$start.val(this.formatValue(this.behavior.scalableRange.getValue().min)); // TMP JQUERY
-        this.start.value = this.formatValue(this.behavior.scalableRange.getValue().min);
-        // this.$end.val(this.formatValue(this.behavior.scalableRange.getValue().max)); // TMP JQUERY
-        this.end.value = this.formatValue(this.behavior.scalableRange.getValue().max);
+        console.warn('> updateSliderInputTextboxes', this.behavior.scalableRange.getValue(), 
+          this.formatValue(this.behavior.scalableRange.getValue().min), 
+          this.formatValue(this.behavior.scalableRange.getValue().max)
+        );
+        this.start.value = this.behavior.scalableRange.getValue().min; //this.formatValue(this.behavior.scalableRange.getValue().min);
+        this.end.value = this.behavior.scalableRange.getValue().max; //this.formatValue(this.behavior.scalableRange.getValue().max);
     }
 
-   
     public formatValue(value: number): string {
         return value != null ? valueFormatter.format(value, "#") : '';
     }
 
     private onRangeInputTextboxChange(
-      inputString: string, 
-      rangeValueType: RangeValueType, 
-      supressFilter: boolean = false
+        inputString: string, 
+        rangeValueType: RangeValueType, 
+        supressFilter: boolean = false
     ): void {
+        console.warn('!> onRangeInputTextboxChange: \n inputString', inputString, 
+          '\n rangeValueType', rangeValueType, 
+          '\n supressFilter', supressFilter
+        );
         // parse input
         let inputValue: number;
         if (!inputString) {
@@ -752,10 +684,12 @@ export class SampleSlicer implements IVisual {
 
             // trigger range change processing
             this.behavior.updateOnRangeSelectonChange();
+            this.updateInternal(false);
         }
     }
 
     private enterSelection(rowSelection: Selection<any>): void {
+        console.log('!> this.enterSelection: rowSelection', rowSelection);
         let settings: Settings = this.settings;
 
         let ulItemElement: Selection<any> = rowSelection // TMP UpdateSelection
@@ -842,6 +776,10 @@ export class SampleSlicer implements IVisual {
     private updateSelection(rowSelection: Selection<any>): void {
         let settings: Settings = this.settings,
             data: SampleSlicerData = this.slicerData;
+        
+        console.log('!> updateSelection rowSelection', rowSelection, 
+          '\n this.slicerData', this.slicerData,
+          '\n this.settings', this.settings);
 
         if (data && settings) {
 
@@ -907,60 +845,45 @@ export class SampleSlicer implements IVisual {
             }
         }
     }
+
     private static createElement(htmlString: string): HTMLElement {
-        const tmpDiv = document.createElement('div');
-        tmpDiv.innerHTML = htmlString.trim();
-      
-        return <HTMLElement>tmpDiv.firstChild; 
+        const parser = new DOMParser();
+        const html = parser.parseFromString(htmlString, 'text/html');
+        return <HTMLElement>html.body.firstChild; 
     }
 
     private createSearchHeader(container: HTMLElement): void {
         let counter: number = 0;
         console.warn('TMP createSearchHeader ');
         
-        // this.$searchHeader = $("<div>") // TMP JQUERY
-        //     .appendTo(container)
-        //     .addClass("searchHeader")
-        //     .addClass("show");
         this.searchHeader = SampleSlicer.createElement(`<div class="searchHeader show" />`);
         container.appendChild(this.searchHeader);
 
-        // $("<div>").appendTo(this.$searchHeader) // TMP JQUERY
-        //     .attr("title", "Search")
-        //     .addClass("search");
         this.searchHeader.appendChild(
           SampleSlicer.createElement(`<div class="search" title="Search" />`)
         );
 
-        // this.$searchInput = $("<input>").appendTo(this.$searchHeader) // TMP JQUERY
-        //     .attr("type", "text")
-        //     .attr("drag-resize-disabled", "true")
-        //     .addClass("searchInput")
-        //     .on("input", () => this.visualHost.persistProperties(<VisualObjectInstancesToPersist>{
-        //         merge: [{
-        //             objectName: "general",
-        //             selector: null,
-        //             properties: {
-        //                 counter: counter++
-        //             }
-        //         }]
-        //     }));
         this.searchInput = SampleSlicer.createElement(`<input type="text" drag-resize-disabled class="searchInput"/>`);
-        this.searchInput.addEventListener(
-            "input", 
-            () => this.visualHost.persistProperties(<VisualObjectInstancesToPersist>{
-                  merge: [{
-                      objectName: "general",
-                      selector: null,
-                      properties: {
-                          counter: counter++
-                      }
-                  }]
-            })
-        );
-        this.searchHeader.appendChild(this.searchInput);
         
-        console.warn('TMP createSearchHeader done');
+        const searchEventlinstener = () => {
+          this.visualHost.persistProperties(<VisualObjectInstancesToPersist>{
+              merge: [{
+                  objectName: "general",
+                  selector: null,
+                  properties: {
+                      counter: counter++
+                  }
+              }]
+          });
+          this.updateInternal(false); 
+        };
+
+        this.searchInput.addEventListener(
+            "input",
+            searchEventlinstener
+        );
+
+        this.searchHeader.appendChild(this.searchInput);
     }
 
     private getSlicerBodyViewport(currentViewport: IViewport): IViewport {
@@ -992,9 +915,10 @@ export class SampleSlicer implements IVisual {
      * */
     private getCallbacks(): SampleSlicerCallbacks {
         let callbacks: SampleSlicerCallbacks = {};
+        console.log('> getCallbacks');
 
         callbacks.applyAdvancedFilter = (filter: IAdvancedFilter): void => {
-          // this.visualHost.applyJsonFilter(filter, "general", "filter", FilterAction.merge );  // TMP comment bc FilterAction
+          //this.visualHost.applyJsonFilter(filter, "general", "filter", FilterAction.merge );  // TMP comment bc FilterAction
         };
 
         callbacks.getAdvancedFilterColumnTarget = (): IFilterColumnTarget => {
@@ -1015,6 +939,9 @@ export class SampleSlicer implements IVisual {
                 return [];
             }
         };
+        
+        console.log('> getCallbacks callbacks', callbacks);
+
         return callbacks;
     }
 }

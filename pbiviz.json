@@ -2,14 +2,14 @@
   "visual": {
     "name": "sampleSlicer",
     "displayName": "SampleSlicer",
-    "guid": "SampleSlicer1448559807355",
+    "guid": "SampleSlicer1448559807355TEST",
     "visualClassName": "SampleSlicer",
-    "version": "1.3.0",
+    "version": "2.0.0",
     "description": "Use this slicer to select discrete numeric categories or range of numeric category values.",
     "supportUrl": "http://community.powerbi.com",
     "gitHubUrl": "https://github.com/Microsoft/powerbi-visuals-sampleslicer"
   },
-  "apiVersion": "1.13.0",
+  "apiVersion": "2.5.0",
   "author": {
     "name": "Microsoft",
     "email": "pbicvsupport@microsoft.com"

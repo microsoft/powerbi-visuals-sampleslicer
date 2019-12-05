@@ -110,6 +110,7 @@ export class TableView implements ITableView {
         // make a copy of options so that it is not modified later by caller
         this.options = { ...options }; // TMP JQUERY $.extend(true, {}, options);
 
+        console.log('TableView constructor options', options)
         this.options.baseContainer
             .style('overflow-y', 'auto')
             .attr('drag-resize-disabled', true);
@@ -123,6 +124,7 @@ export class TableView implements ITableView {
             .attr('class', 'visibleGroup');
 
         TableView.SetDefaultOptions(options);
+
     }
 
     private static SetDefaultOptions(options: TableViewViewOptions) {

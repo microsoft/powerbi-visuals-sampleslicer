@@ -35,6 +35,7 @@ type Selection<T> = D3Selection<any, T, any, any>;
 
 import {
   IAdvancedFilter,
+  AdvancedFilter,
   IAdvancedFilterCondition,
   IFilterColumnTarget,
 } from "powerbi-models";
@@ -100,13 +101,16 @@ export class SelectionBehavior implements IInteractiveBehavior {
 
         slicers.on("click", (dataPoint: SampleSlicerDataPoint, index: number) => {
             (d3Event as MouseEvent).preventDefault();
-
+            console.warn("slicers onClick");
+            console.log('dataPoint', dataPoint);
             this.clearRangeSelection();
 
             /* update selection state */
             selectionHandler.handleSelection(dataPoint, true /* isMultiSelect */);
 
             /* send selection state to the host*/
+            console.warn('TODO applySelectionFilter');
+
             // selectionHandler.applySelectionFilter(); // TMP comment bc applySelectionFilter
         });
 
@@ -172,8 +176,10 @@ export class SelectionBehavior implements IInteractiveBehavior {
                 value: value.max
             });
         }
-
-        let filter: IAdvancedFilter = new window['powerbi-models'].AdvancedFilter(target, "And", conditions);
-        this.callbacks.applyAdvancedFilter(filter);
+        console.warn('updateOnRangeSelectonChange > this.callbacks.applyAdvancedFilter !')
+        console.warn('TODO applySelectionFilter');
+      //  let filter = new AdvancedFilter(target, "And", conditions); // TMP  new window['powerbi-models'].AdvancedFilter(target, "And", conditions);
+        // TMP IAdvancedFilter
+      //  this.callbacks.applyAdvancedFilter(filter);
     }
 }
