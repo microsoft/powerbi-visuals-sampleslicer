@@ -43,18 +43,18 @@ type Selection<T> = D3Selection<any, T, any, any>;
 
 // powerbi
 import {
+  IFilter,
+  IBasicFilter,
   IAdvancedFilter,
   IAdvancedFilterCondition,
   IFilterColumnTarget,
 } from "powerbi-models";
 
-// import FilterManager = powerbi.extensibility.utils.filter.FilterManager;
-// import AppliedFilter = powerbi.extensibility.utils.filter.AppliedFilter;
-
 import powerbiVisualsApi from "powerbi-visuals-api";
 import DataView = powerbiVisualsApi.DataView;
 import IViewport = powerbiVisualsApi.IViewport;
 import ValueRange = powerbiVisualsApi.ValueRange;
+import FilterAction = powerbiVisualsApi.FilterAction;
 
 import DataViewCategoryColumn = powerbiVisualsApi.DataViewCategoryColumn;
 import DataViewCategoricalColumn = powerbiVisualsApi.DataViewCategoricalColumn;
@@ -85,6 +85,7 @@ import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutil
 import {
   interactivityBaseService,
   interactivitySelectionService,
+  interactivityFilterService
 } from "powerbi-visuals-utils-interactivityutils";
 
 import createInteractivityService = interactivitySelectionService.createInteractivitySelectionService;
@@ -130,8 +131,8 @@ export interface SampleSlicerDataPoint extends SelectableDataPoint {
 export interface SampleSlicerCallbacks {
     getPersistedSelectionState?: () => ISelectionId[];
     restorePersistedRangeSelectionState?: () => void;
-    applyAdvancedFilter?: (filter: IAdvancedFilter) => void;
-    getAdvancedFilterColumnTarget?: () => IFilterColumnTarget;
+    applyFilter?: (filter: IFilter) => void;
+    getFilterColumnTarget?: () => IFilterColumnTarget;
 }
 
 export class SampleSlicer implements IVisual {
@@ -376,7 +377,9 @@ export class SampleSlicer implements IVisual {
         }
 
         // this.eventService.renderingStarted(options);
-        console.log('update options.viewport', options.viewport, '\n this.currentViewport', this.currentViewport );
+        console.warn('update \n options', 
+        options, 
+        '\n this.currentViewport', this.currentViewport );
 
         // create viewport if not yet created
         if (!this.currentViewport) {
@@ -413,7 +416,7 @@ export class SampleSlicer implements IVisual {
     }
     
     private updateInternal(categoryIdentityChanged: boolean): void {
-        console.log('updateInternal categoryIdentityChanged', categoryIdentityChanged);
+        //console.log('updateInternal categoryIdentityChanged', categoryIdentityChanged);
         // convert data to internal representation
         const data = SampleSlicer.converter(
             this.dataView,
@@ -444,6 +447,7 @@ export class SampleSlicer implements IVisual {
         this.slicerBody
           .style('height', `${this.currentViewport.height - 120}px`);
 
+        // TMP update fix
         this.updateTableView(categoryIdentityChanged);
 
         this.updateRangeSlicer();
@@ -467,6 +471,7 @@ export class SampleSlicer implements IVisual {
             )
             .viewport(SampleSlicer.getSlicerBodyViewport(this.currentViewport))
             .render();
+
     }
     //===============================================================================================================================
     //===============================================================================================================================
@@ -560,7 +565,7 @@ export class SampleSlicer implements IVisual {
             viewport,
             baseContainer: slicerBody,
         };
-
+        console.log('tableViewOptions', tableViewOptions)
         this.tableView = TableViewFactory.createTableView(tableViewOptions);
     }
 
@@ -761,7 +766,7 @@ export class SampleSlicer implements IVisual {
 
     // HANDLER
     private enterSelection(rowSelection: Selection<any>): void {
-        console.warn('!> this.enterSelection: rowSelection', rowSelection);
+        //console.warn('!> this.enterSelection: rowSelection', rowSelection);
         let settings: Settings = this.settings;
 
         let ulItemElement: Selection<any> = rowSelection // TMP UpdateSelection
@@ -919,17 +924,19 @@ export class SampleSlicer implements IVisual {
     private getCallbacks(): SampleSlicerCallbacks {
         let callbacks: SampleSlicerCallbacks = {};
 
-        callbacks.applyAdvancedFilter = (filter: IAdvancedFilter): void => {
-          //this.visualHost.applyJsonFilter(filter, "general", "filter", FilterAction.merge );  // TMP comment bc FilterAction
+        callbacks.applyFilter = (filter: IFilter): void => {
+          console.warn('!!!applyFilter!!! filter', filter);
+
+          this.visualHost.applyJsonFilter(filter, "general", "filter", FilterAction.merge);
         };
 
-        callbacks.getAdvancedFilterColumnTarget = (): IFilterColumnTarget => {
-            let categories: DataViewCategoricalColumn = this.dataView.categorical.categories[0];
-
-            let target: IFilterColumnTarget = {
-                table: categories.source.queryName.substr(0, categories.source.queryName.indexOf('.')),
-                column: categories.source.displayName
-            };
+        callbacks.getFilterColumnTarget = (): IFilterColumnTarget => {
+            const categories: DataViewCategoricalColumn = this.dataView.categorical.categories[0];
+            const target = interactivityFilterService.extractFilterColumnTarget(this.dataView.metadata.columns[0]);
+            // let target: IFilterColumnTarget = {
+            //     table: categories.source.queryName.substr(0, categories.source.queryName.indexOf('.')),
+            //     column: categories.source.displayName
+            // };
 
             return target;
         };

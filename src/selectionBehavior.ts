@@ -34,6 +34,10 @@ import {
 type Selection<T> = D3Selection<any, T, any, any>;
 
 import {
+  TupleFilter,
+  ITupleFilter,
+  IBasicFilter,
+  BasicFilter,
   IAdvancedFilter,
   AdvancedFilter,
   IAdvancedFilterCondition,
@@ -58,6 +62,7 @@ import { Settings } from "./settings";
 import { ScalableRange } from "./scalableRange";
 import { SampleSlicerBehaviorOptions } from "./selectionBehavior";
 import { SampleSlicerDataPoint, SampleSlicerCallbacks } from "./sampleSlicer";
+import { MAX_VALUE } from "powerbi-visuals-utils-typeutils/lib/double";
 
 export interface SampleSlicerBehaviorOptions extends IBehaviorOptions<any>{
     slicerItemContainers: Selection<SelectableDataPoint>;
@@ -109,9 +114,35 @@ export class SelectionBehavior implements IInteractiveBehavior {
             selectionHandler.handleSelection(dataPoint, true /* isMultiSelect */);
 
             /* send selection state to the host*/
-            console.error('TODO applySelectionFilter');
+            console.error('TODO applySelectionFilter', dataPoint);
 
-            // selectionHandler.applySelectionFilter(); // TMP comment bc applySelectionFilter
+            //selectionHandler.applySelectionFilter(); // TMP comment bc applySelectionFilter
+          //   let filter: IBasicFilter = {
+          //     $schema: "http://powerbi.com/product/schema#tuple",
+          //     filterType: 1,
+          //     operator: "In",
+          //     target: {
+          //         table: "Region",
+          //         column: "Region.Key1"
+          //     },
+          //     values: [
+          //         24
+          //     ]
+          // }
+            let filter: IBasicFilter =  {
+              //  $schema: "http://powerbi.com/product/schema#basic",
+              $schema: "http://powerbi.com/product/schema#tuple",
+              filterType: 1,
+              operator: "In",
+              target: this.callbacks.getFilterColumnTarget(), 
+              values:  [dataPoint.category]
+              //...(new BasicFilter(
+                  //this.callbacks.getFilterColumnTarget(), 
+                //   "In", 
+                //   [dataPoint.category]
+                // ))
+              };
+            this.callbacks.applyFilter(filter);
         });
 
     }
@@ -161,7 +192,7 @@ export class SelectionBehavior implements IInteractiveBehavior {
         }
 
         let conditions: IAdvancedFilterCondition[] = [];
-        let target: IFilterColumnTarget = this.callbacks.getAdvancedFilterColumnTarget();
+        let target: IFilterColumnTarget = this.callbacks.getFilterColumnTarget();
 
         if (value.min) {
             conditions.push({
@@ -176,10 +207,27 @@ export class SelectionBehavior implements IInteractiveBehavior {
                 value: value.max
             });
         }
-        console.warn('updateOnRangeSelectonChange > this.callbacks.applyAdvancedFilter !')
+        
+        const valuesInRange: string[] = this.dataPoints
+        .map((dp: SampleSlicerDataPoint) => dp.category)
+        .filter( (current) => (Number(current) >= value.min) && (Number(current) <= value.max))
+        
+        console.info(
+          '!!! updateOnRangeSelectonChange > scalableRange.getValue()!', this.scalableRange.getValue(),
+          '\n this.dataPoints', this.dataPoints,
+          '\n values in range', valuesInRange);
+        
         console.error('TODO applySelectionFilter');
-      //  let filter = new AdvancedFilter(target, "And", conditions); // TMP  new window['powerbi-models'].AdvancedFilter(target, "And", conditions);
+        let filter: IBasicFilter = {
+          $schema: "http://powerbi.com/product/schema#tuple",
+          ...(new BasicFilter(target, "In", valuesInRange))
+        };
+        // let filter: IAdvancedFilter = {
+        //   $schema: "http://powerbi.com/product/schema#advanced",
+        //   ...(new AdvancedFilter(target, "And", conditions))
+        // }
+          // TMP  new window['powerbi-models'].AdvancedFilter(target, "And", conditions);
         // TMP IAdvancedFilter
-      //  this.callbacks.applyAdvancedFilter(filter);
+        this.callbacks.applyFilter(filter);
     }
 }

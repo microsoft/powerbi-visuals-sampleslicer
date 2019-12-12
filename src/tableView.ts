@@ -316,10 +316,12 @@ export class TableView implements ITableView {
             groupedData: TableViewGroupedData = this.getGroupedData(),
             rowSelection: Selection<any>, // TMP UpdateSelection
             cellSelection: Selection<any>; // TMP UpdateSelection
-
+        
+        let i = 0;
+        for (i = 0;  i<6; i++) { // TMP FIX
         rowSelection = visibleGroupContainer
             .selectAll(TableView.RowSelector.selectorName)
-            .data(<SampleSlicerDataPoint[]>groupedData.data);
+            .data(<SampleSlicerDataPoint[][]>groupedData.data);
 
         rowSelection
             .enter()
@@ -332,11 +334,6 @@ export class TableView implements ITableView {
                 return dataPoints;
             });
 
-        cellSelection
-            .enter()
-            .append('div')
-            .classed(TableView.CellSelector.className, true);
-
         cellSelection.call((selection: Selection<any>) => {
             options.onEnter(selection);
         });
@@ -344,6 +341,11 @@ export class TableView implements ITableView {
         cellSelection.call((selection: Selection<any>) => {
             options.onUpdate(selection);
         });
+       
+        cellSelection
+            .enter()
+            .append('div')
+            .classed(TableView.CellSelector.className, true);
 
         cellSelection
             .style('height', (rowHeight > 0) ? `${rowHeight}px` : 'auto');
@@ -355,7 +357,6 @@ export class TableView implements ITableView {
 
         rowSelection.style('width', null);
 
-
         cellSelection
             .exit()
             .remove();
@@ -364,5 +365,6 @@ export class TableView implements ITableView {
             .exit()
             .call(d => options.onExit(d))
             .remove();
+        }
     }
 }
