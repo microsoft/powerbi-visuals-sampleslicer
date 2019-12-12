@@ -57,7 +57,7 @@ export interface Settings {
     };
 }
 
-export let defaultSettings: Settings = {
+export const defaultSettings: Settings = {
     general: {
         columns: 3,
         rows: 0,
@@ -88,7 +88,7 @@ export let defaultSettings: Settings = {
     }
 };
 
-export let persistedSettingsDataViewObjectPropertyIdentifiers = {
+export const persistedSettingsDataViewObjectPropertyIdentifiers = {
     general: {
         multiselect: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'multiselect' }, 
         selection: <DataViewObjectPropertyIdentifier>{ objectName: 'general', propertyName: 'selection' }, 

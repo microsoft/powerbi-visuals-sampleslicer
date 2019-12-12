@@ -59,10 +59,10 @@ export module TableViewFactory {
     }
 }
 
-export interface TableViewViewOptions {
-    enter: (selection: Selection<any>) => void;
-    exit: (selection: Selection<any>) => void;
-    update: (selection: Selection<any>) => void;
+export interface TableViewOptions {
+    onEnter: (selection: Selection<any>) => void;
+    onExit: (selection: Selection<any>) => void;
+    onUpdate: (selection: Selection<any>) => void;
     baseContainer: Selection<any>;
     rowHeight: number;
     columnWidth: number;
@@ -100,13 +100,13 @@ export class TableView implements ITableView {
     private _totalRows: number;
     private _totalColumns: number;
 
-    private options: TableViewViewOptions;
+    private options: TableViewOptions;
     private visibleGroupContainer: Selection<any>;
     private scrollContainer: Selection<any>;
 
     private computedOptions: TableViewComputedOptions;
 
-    public constructor(options: TableViewViewOptions) {
+    public constructor(options: TableViewOptions) {
         // make a copy of options so that it is not modified later by caller
         this.options = { ...options }; // TMP JQUERY $.extend(true, {}, options);
 
@@ -127,7 +127,7 @@ export class TableView implements ITableView {
 
     }
 
-    private static SetDefaultOptions(options: TableViewViewOptions) {
+    private static SetDefaultOptions(options: TableViewOptions) {
         options.rowHeight = options.rowHeight || TableView.defaultRowHeight;
     }
 
@@ -213,7 +213,7 @@ export class TableView implements ITableView {
     }
 
     private getGroupedData(): TableViewGroupedData {
-        let options: TableViewViewOptions = this.options,
+        let options: TableViewOptions = this.options,
             groupedData: any[] = [],
             totalItems: number = this._data.length,
             totalRows: number = options.rows > totalItems
@@ -310,7 +310,7 @@ export class TableView implements ITableView {
     }
 
     public render(): void {
-        let options: TableViewViewOptions = this.options,
+        let options: TableViewOptions = this.options,
             visibleGroupContainer: Selection<any> = this.visibleGroupContainer,
             rowHeight: number = options.rowHeight || TableView.defaultRowHeight,
             groupedData: TableViewGroupedData = this.getGroupedData(),
@@ -337,13 +337,12 @@ export class TableView implements ITableView {
             .append('div')
             .classed(TableView.CellSelector.className, true);
 
-
         cellSelection.call((selection: Selection<any>) => {
-            options.enter(selection);
+            options.onEnter(selection);
         });
 
         cellSelection.call((selection: Selection<any>) => {
-            options.update(selection);
+            options.onUpdate(selection);
         });
 
         cellSelection
@@ -363,7 +362,7 @@ export class TableView implements ITableView {
 
         rowSelection
             .exit()
-            .call(d => options.exit(d))
+            .call(d => options.onExit(d))
             .remove();
     }
 }

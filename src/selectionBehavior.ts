@@ -109,7 +109,7 @@ export class SelectionBehavior implements IInteractiveBehavior {
             selectionHandler.handleSelection(dataPoint, true /* isMultiSelect */);
 
             /* send selection state to the host*/
-            console.warn('TODO applySelectionFilter');
+            console.error('TODO applySelectionFilter');
 
             // selectionHandler.applySelectionFilter(); // TMP comment bc applySelectionFilter
         });
@@ -177,7 +177,7 @@ export class SelectionBehavior implements IInteractiveBehavior {
             });
         }
         console.warn('updateOnRangeSelectonChange > this.callbacks.applyAdvancedFilter !')
-        console.warn('TODO applySelectionFilter');
+        console.error('TODO applySelectionFilter');
       //  let filter = new AdvancedFilter(target, "And", conditions); // TMP  new window['powerbi-models'].AdvancedFilter(target, "And", conditions);
         // TMP IAdvancedFilter
       //  this.callbacks.applyAdvancedFilter(filter);
