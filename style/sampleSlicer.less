@@ -60,7 +60,6 @@
 @themeLighterColor: #F2C811;
 @regularFontFamily: helvetica, arial, sans-serif;
 
-
     .numeric-range-slicer {
         // Constants
         @handlerHeight: 17px;
@@ -93,6 +92,7 @@
                 justify-content: flex-start;
                 margin-top: -5px;
                 margin-left: -6px;
+                margin-bottom: 4px;
 
                 .numeric-range-slicer-control {
                     position: relative;
@@ -138,18 +138,24 @@
         }
     }
 
+
 .sampleSlicer {
     font-family: @regularFontFamily;
-    padding: 5px 6px 7px 8px;
-    .clear {
+    padding: 5px  6px 7px 4px;
+    
+    .clearButton {
         background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAOCAMAAADHVLbdAAAAZlBMVEUAAADq6urp6enBwcHV1dWfn5+zs7O/v7/l5eWZmZmioqKjo6OlpaWmpqanp6eurq6vr6+xsbGzs7O2tra3t7e4uLi6urq9vb3Dw8PGxsbJycnMzMzNzc3Ozs7Pz8/Q0NDR0dH///9091kCAAAACXRSTlMARGaZmd3d3e7y4Z+JAAAAX0lEQVQIW3XI1xJAMBSE4dWiHUSJRPf+TymFCRf2Ymf+D/iZWr85sv2dAuAeZmGen5/UELtsbp+sby1lzgfzBwOq0CSzmpirQywuEUl9AanOJSBTfYo/qaEkygvqvfhdpMwD2G4l8pMAAAAASUVORK5CYII=);
 
-        background-size: contain;
+        background-size: initial;
         background-repeat: no-repeat;
-        background-position: center;
-        width: 13px;
-        height: 12px;
-        margin: 4px 2px;
+        background-position: center center;
+        width: 24px;
+        height: 18px;
+        margin: 0 1px 0 6px;
+        box-sizing: border-box;
+        border: 1px solid @neutralLightColor;
+        
+        display: inline-block;
         float: right;
         cursor: pointer;
     }
@@ -174,6 +180,9 @@
     }
 
     .slicerBody {
+        .scrollRegion{
+            padding-top: 3px;
+        }
         .cell {
             box-sizing: border-box;
             padding: 2px 5px;
@@ -274,7 +283,8 @@
 
     .searchHeader {
         overflow: hidden;
-
+        display: inline-block;
+        
         &.collapsed {
             display: none;
         }
@@ -289,7 +299,7 @@
             transition: border 250ms;
             opacity: 1;
 
-            height: 20px;
+            height: 24px !important;
         }
 
 
@@ -303,7 +313,8 @@
 
         .search {
             cursor: pointer;
-            margin: 1px 4px;
+            display: inline-block;
+            margin: 4px 4px 3px;
             color: @neutralDarkColor;
             width: 17px;
             height: 17px;
@@ -320,7 +331,7 @@
             border-style:none;
             min-width: 0px;
             padding: 0; // Override parent style
-
+            
             &:focus {
                 outline-width: 0;
             }

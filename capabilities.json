@@ -30,8 +30,8 @@
         }
     ],
     "objects": {
-      "selection": {
-        "displayName": "Selection",
+      "general": {
+        "displayName": "General",
         "properties": {
         
           "filter": {

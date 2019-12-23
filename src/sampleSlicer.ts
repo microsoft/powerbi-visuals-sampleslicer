@@ -32,21 +32,14 @@ import * as noUiSlider from "nouislider";
 // d3
 import {
     select as d3Select,
-    selectAll as d3SelectAll,
     Selection as D3Selection,
-    min as d3min,
-    max as d3max
 } from "d3";
 
 type Selection<T> = D3Selection<any, T, any, any>;
-//import UpdateSelection = d3.selection.Update;
 
 // powerbi
 import {
   IFilter,
-  IBasicFilter,
-  IAdvancedFilter,
-  IAdvancedFilterCondition,
   IFilterColumnTarget,
 } from "powerbi-models";
 
@@ -65,11 +58,11 @@ import VisualObjectInstancesToPersist = powerbiVisualsApi.VisualObjectInstancesT
 
 //TMP 2.5 import DataViewScopeIdentity = powerbiVisualsApi.DataViewScopeIdentity;
 import DataViewObjectPropertyIdentifier = powerbiVisualsApi.DataViewObjectPropertyIdentifier;
-
-// import IVisualEventService = powerbiVisualsApi.extensibility.IVisualEventService;
+import IVisualEventService = powerbiVisualsApi.extensibility.IVisualEventService;
 
 import IVisual = powerbiVisualsApi.extensibility.visual.IVisual; // powerbiVisualsApi.extensibility.IVisual;
 import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
+import ISelectionManager = powerbiVisualsApi.extensibility.ISelectionManager;
 import VisualUpdateOptions = powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
 import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
 //TMP 2.5 import DataRepetitionSelector = powerbiVisualsApi.data.DataRepetitionSelector
@@ -85,10 +78,10 @@ import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutil
 import {
   interactivityBaseService,
   interactivitySelectionService,
-  interactivityFilterService
+  interactivityFilterService,
 } from "powerbi-visuals-utils-interactivityutils";
 
-import createInteractivityService = interactivitySelectionService.createInteractivitySelectionService;
+import createInteractivitySelectionService = interactivitySelectionService.createInteractivitySelectionService;
 import IInteractivityService = interactivityBaseService.IInteractivityService;
 import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
 
@@ -142,7 +135,8 @@ export class SampleSlicer implements IVisual {
     private slicerData: SampleSlicerData;
 
     private interactivityService: IInteractivityService<any>;
-    // private eventService: IVisualEventService;
+    private selectionManager: ISelectionManager;
+    private eventService: IVisualEventService;
 
     private visualHost: IVisualHost;
     private settings: Settings;
@@ -152,7 +146,8 @@ export class SampleSlicer implements IVisual {
     private searchWrapper: HTMLElement;
 
     private sliderElement: HTMLElement;
-
+    
+    private clearButton: HTMLElement;
     private searchInput: HTMLInputElement;
     private startInput: HTMLInputElement;
     private endInput: HTMLInputElement;
@@ -197,7 +192,7 @@ export class SampleSlicer implements IVisual {
     public static LabelTextSelector: ClassAndSelector = createClassAndSelector('slicerText');
     public static HeaderSelector: ClassAndSelector = createClassAndSelector('slicerHeader');
     public static InputSelector: ClassAndSelector = createClassAndSelector('slicerCheckbox');
-    public static ClearSelector: ClassAndSelector = createClassAndSelector('clear');
+    public static ClearButtonSelector: ClassAndSelector = createClassAndSelector('clearButton');
     public static BodySelector: ClassAndSelector = createClassAndSelector('slicerBody');
     public static RangeSlicerSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer');
     public static RangeSlicerHeadSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-head');
@@ -269,7 +264,7 @@ export class SampleSlicer implements IVisual {
     */
 
     public static formatValue(value: number): string {
-        return value != null ? valueFormatter.format(value, "#") : '';
+        return value != null ? valueFormatter.format(String(value), "#") : '';
     }
 
     public static getSampleTextProperties(textSize?: number): TextProperties {
@@ -344,8 +339,9 @@ export class SampleSlicer implements IVisual {
         return true;
     }
 
-    //===============================================================================================================================
-    //===============================================================================================================================
+    /*
+     *  Public
+     */
 
     constructor(options: VisualConstructorOptions) {
         if (window.location !== window.parent.location) {
@@ -355,14 +351,12 @@ export class SampleSlicer implements IVisual {
         this.root = options.element;
         this.visualHost = options.host;
         this.behavior = new SelectionBehavior(this.getCallbacks());
-        this.interactivityService = createInteractivityService(options.host);
+        this.interactivityService = createInteractivitySelectionService(options.host);
 
         this.settings = defaultSettings;
-        // this.eventService = options.host.eventService;
+        this.eventService = options.host.eventService;
+        this.selectionManager = options.host.createSelectionManager();
     }
-
-    //===============================================================================================================================
-    //===============================================================================================================================
 
     public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
         return [];
@@ -376,10 +370,8 @@ export class SampleSlicer implements IVisual {
             return;
         }
 
-        // this.eventService.renderingStarted(options);
-        console.warn('update \n options', 
-        options, 
-        '\n this.currentViewport', this.currentViewport );
+        this.eventService.renderingStarted(options);
+        
 
         // create viewport if not yet created
         if (!this.currentViewport) {
@@ -390,14 +382,14 @@ export class SampleSlicer implements IVisual {
         // update dataview
         const existingDataView = this.dataView;
         this.dataView = options.dataViews[0];
-        console.warn("UPDATE, this.dataView", this.dataView, '\n existingDataView', existingDataView);
 
+        
         // check if the dataView changed to determine if scrollbars need to be reset
         let categoryIdentityChanged: boolean = true;
         if (existingDataView) {
           categoryIdentityChanged = !SampleSlicer.hasSameCategoryIdentity(existingDataView, this.dataView);
         }
-
+        
         // update viewport
         if (options.viewport.height === this.currentViewport.height
             && options.viewport.width === this.currentViewport.width) {
@@ -406,17 +398,74 @@ export class SampleSlicer implements IVisual {
         else {
             this.currentViewport = options.viewport;
         }
+        console.warn("UPDATE");
+        console.info("options:", options, 
+            "\n options.jsonFilters[0]", options.jsonFilters || options.jsonFilters[0],  
+            "\n this.dataView", this.dataView, 
+            "\n currentViewport", this.currentViewport, 
+            "\n waitingForData", this.waitingForData);
 
-        console.warn("UPDATE \n DataView", this.dataView,
-          '\n currentViewport', this.currentViewport, 
-          '\n waitingForData', this.waitingForData);
-        
         this.updateInternal(categoryIdentityChanged);
-        // this.eventService.renderingFinished(options);
+        this.eventService.renderingFinished(options);
     }
-    
+
+    /*
+     *  Private
+     */
+
+    private initContainer() {
+        const settings: Settings = this.settings,
+            slicerBodyViewport: IViewport = SampleSlicer.getSlicerBodyViewport(this.currentViewport);
+
+        console.log('initContainer. Settings: ', settings, '\n slicerBodyViewport', slicerBodyViewport);
+
+        // Prevents visual container from doing any other actions on keypress
+        this.root.addEventListener("keyup", (event: KeyboardEvent) => {
+          event.stopPropagation()
+        });
+
+        // this.root.addEventListener('contextmenu', (event) => {
+        //     const emptySelection = {
+        //         "measures": [],
+        //         "dataMap": {
+        //         }
+        //     };
+            
+        //     this.selectionManager.showContextMenu(emptySelection, {
+        //         x: event.clientX,
+        //         y: event.clientY
+        //     });
+        //     event.preventDefault();
+        // });
+
+        this.root.addEventListener("keydown", (event: KeyboardEvent) =>{
+            event.stopPropagation()
+        });
+        const outerContainer = SampleSlicer.createElement("<div class='sampleSlicer outerContainer' />");
+        this.root.appendChild(outerContainer)
+        
+        this.initClearButton(outerContainer);
+        this.initHeader(outerContainer);
+        this.initRangeSlicer(outerContainer);
+
+        const slicerContainer: Selection<any> = d3Select(outerContainer)
+            .append('div')
+            .classed(SampleSlicer.ContainerSelector.className, true)
+            .style('background', '#ffffff');
+
+        this.initSearchWidget(slicerContainer.node());
+
+        // SLICER BODY & TABLE VIEW
+        this.slicerBody = slicerContainer
+            .append('div')
+            .classed(SampleSlicer.BodySelector.className, true)
+            .style('height', `${slicerBodyViewport.height - 120}px`);
+
+        this.initTableView();
+    }
+
     private updateInternal(categoryIdentityChanged: boolean): void {
-        //console.log('updateInternal categoryIdentityChanged', categoryIdentityChanged);
+        // console.log('updateInternal categoryIdentityChanged', categoryIdentityChanged);
         // convert data to internal representation
         const data = SampleSlicer.converter(
             this.dataView,
@@ -429,7 +478,7 @@ export class SampleSlicer implements IVisual {
             return;
         }
 
-        this.restoreFilter(data);
+        //this.restoreFilter(data);
 
         if (this.slicerData) {
             if (this.isSelectionSaved) {
@@ -447,75 +496,14 @@ export class SampleSlicer implements IVisual {
         this.slicerBody
           .style('height', `${this.currentViewport.height - 120}px`);
 
-        // TMP update fix
         this.updateTableView(categoryIdentityChanged);
 
         this.updateRangeSlicer();
     }
+    /* 
+     * Visual parts initialization and update
+     */
 
-    private updateTableView(resetScrollbarPosition: boolean): void {
-        const slicerDataPoints: SampleSlicerDataPoint[] = this.slicerData.slicerDataPoints,
-            slicerText = this.settings.slicerText,
-            rows = this.settings.general.rows,
-            columns = this.settings.general.columns;
-
-        this.tableView
-            .rowHeight(slicerText.height)
-            .columnWidth(slicerText.width)
-            .rows(rows)
-            .columns(columns)
-            .data(
-                slicerDataPoints.filter(x => !x.filtered),
-                (d: SampleSlicerDataPoint) => slicerDataPoints.indexOf(d),
-                resetScrollbarPosition
-            )
-            .viewport(SampleSlicer.getSlicerBodyViewport(this.currentViewport))
-            .render();
-
-    }
-    //===============================================================================================================================
-    //===============================================================================================================================
-
-    private restoreFilter(data: SampleSlicerData) {
-        //console.warn('> restoreFilter data', data);
-        // TODO
-        console.error('TODO restoreFilter');
-    }
-
-    private initContainer() {
-        const settings: Settings = this.settings,
-            slicerBodyViewport: IViewport = SampleSlicer.getSlicerBodyViewport(this.currentViewport);
-
-        console.log('initContainer. Settings: ', settings, '\n slicerBodyViewport', slicerBodyViewport);
-
-        // Prevents visual container from doing any other actions on keypress
-        this.root.addEventListener("keyup", (event: KeyboardEvent) => {
-          event.stopPropagation()
-        });
-
-        this.root.addEventListener("keydown", (event: KeyboardEvent) =>{
-          event.stopPropagation()
-        });
-
-        this.initHeader(this.root);
-        this.initRangeSlicer(this.root);
-
-        const slicerContainer: Selection<any> = d3Select(this.root)
-            .append('div')
-            .classed(SampleSlicer.ContainerSelector.className, true)
-            .style('background', '#ffffff');
-
-        this.initSearchWidget(slicerContainer.node());
-
-        // SLICER BODY & TABLE VIEW
-        this.slicerBody = slicerContainer
-            .append('div')
-            .classed(SampleSlicer.BodySelector.className, true)
-            .style('height', `${slicerBodyViewport.height - 120}px`);
-
-        this.initTableView();
-    }
-    
     private initHeader(parent: HTMLElement): void {
       const headerText = this.settings.headerText;
 
@@ -528,6 +516,22 @@ export class SampleSlicer implements IVisual {
           .classed(SampleSlicer.HeaderTextSelector.className, true)
           .style('margin-left', PixelConverter.toString(headerText.marginLeft))
           .style('margin-top', PixelConverter.toString(headerText.marginTop))
+    }
+
+    private updateHeader(): void {
+      this.slicerHeader
+        .select(SampleSlicer.HeaderTextSelector.selectorName)
+        .text(this.slicerData.categorySourceName);
+    }
+    
+    private initClearButton(parent: HTMLElement): void {
+        this.clearButton = SampleSlicer.createElement(`<div class="${SampleSlicer.ClearButtonSelector.className}"> </div>`);
+        
+        parent.appendChild(this.clearButton);
+        
+        this.clearButton.addEventListener('click', () => {
+            this.behavior.clearFilters();
+        });
     }
 
     private initTableView(): void {
@@ -567,6 +571,26 @@ export class SampleSlicer implements IVisual {
         };
         console.log('tableViewOptions', tableViewOptions)
         this.tableView = TableViewFactory.createTableView(tableViewOptions);
+    }
+
+    private updateTableView(resetScrollbarPosition: boolean): void {
+      const slicerDataPoints: SampleSlicerDataPoint[] = this.slicerData.slicerDataPoints,
+          slicerText = this.settings.slicerText,
+          rows = this.settings.general.rows,
+          columns = this.settings.general.columns;
+
+      this.tableView
+          .rowHeight(slicerText.height)
+          .columnWidth(slicerText.width)
+          .rows(rows)
+          .columns(columns)
+          .data(
+              slicerDataPoints.filter(x => !x.filtered),
+              (d: SampleSlicerDataPoint) => slicerDataPoints.indexOf(d),
+              resetScrollbarPosition
+          )
+          .viewport(SampleSlicer.getSlicerBodyViewport(this.currentViewport))
+          .render();
     }
 
     private initRangeSlicer(parent: HTMLElement): void {
@@ -613,6 +637,7 @@ export class SampleSlicer implements IVisual {
 
         this.startInput.addEventListener("focus", (event: Event) => {
             this.startInput.value = SampleSlicer.formatValue(this.behavior.scalableRange.getValue().min);
+            console.warn("focus min", SampleSlicer.formatValue(this.behavior.scalableRange.getValue().min));
             this.startInput.select();
         });
 
@@ -630,8 +655,24 @@ export class SampleSlicer implements IVisual {
 
         this.endInput.addEventListener("focus", (event: Event) => {
             this.endInput.value = SampleSlicer.formatValue(this.behavior.scalableRange.getValue().max);
+            console.warn("focus max", SampleSlicer.formatValue(this.behavior.scalableRange.getValue().max));
             this.endInput.select();
         });
+    }
+
+    private updateRangeSlicer(): void {
+        if (!this.slider) {
+            const sliderContainer: HTMLElement = this.rangeSlicerSlider.nodes()[0];
+            this.initNoUISlider(sliderContainer);
+        } else {
+            // get the scaled range value
+            // and use it to set the slider
+            let scaledValue = this.behavior.scalableRange.getScaledValue();
+            this.slider.set([scaledValue.min, scaledValue.max]);
+        }
+
+        this.startInput.value =  SampleSlicer.formatValue(this.behavior.scalableRange.getValue().min);
+        this.endInput.value =  SampleSlicer.formatValue(this.behavior.scalableRange.getValue().max);
     }
 
     private initNoUISlider(parent: HTMLElement) {
@@ -698,28 +739,10 @@ export class SampleSlicer implements IVisual {
         this.searchWrapper.appendChild(this.searchInput);
     }
 
-    private updateRangeSlicer(): void {
-        if (!this.slider) {
-            const sliderContainer: HTMLElement = this.rangeSlicerSlider.nodes()[0];
-            this.initNoUISlider(sliderContainer);
-        } else {
-            // get the scaled range value
-            // and use it to set the slider
-            let scaledValue = this.behavior.scalableRange.getScaledValue();
-            this.slider.set([scaledValue.min, scaledValue.max]);
-        }
-        
-        this.startInput.value = String(this.behavior.scalableRange.getValue().min || ''); // TODO SampleSlicer.formatValue(this.behavior.scalableRange.getValue().min);
-        this.endInput.value = String(this.behavior.scalableRange.getValue().max || ''); // TODO SampleSlicer.formatValue(this.behavior.scalableRange.getValue().max);
-    }
+    /*
+     *  Handlers
+     */ 
 
-    private updateHeader(): void {
-      this.slicerHeader
-        .select(SampleSlicer.HeaderTextSelector.selectorName)
-        .text(this.slicerData.categorySourceName);
-    }
-
-    // HANDLER
     private onRangeInputTextboxChange(
         inputString: string,
         rangeValueType: RangeValueType,
@@ -764,12 +787,11 @@ export class SampleSlicer implements IVisual {
         }
     }
 
-    // HANDLER
     private enterSelection(rowSelection: Selection<any>): void {
         //console.warn('!> this.enterSelection: rowSelection', rowSelection);
         let settings: Settings = this.settings;
 
-        let ulItemElement: Selection<any> = rowSelection // TMP UpdateSelection
+        let ulItemElement: Selection<any> = rowSelection
             .selectAll('ul')
             .data((dataPoint: SampleSlicerDataPoint) => {
                 return [dataPoint];
@@ -783,7 +805,7 @@ export class SampleSlicer implements IVisual {
             .exit()
             .remove();
 
-        let listItemElement: Selection<any> = ulItemElement // TMP UpdateSelection
+        let listItemElement: Selection<any> = ulItemElement
             .selectAll(SampleSlicer.ItemContainerSelector.selectorName)
             .data((dataPoint: SampleSlicerDataPoint) => {
                 return [dataPoint];
@@ -797,7 +819,7 @@ export class SampleSlicer implements IVisual {
         listItemElement
             .style('margin-left', PixelConverter.toString(settings.slicerItemContainer.marginLeft));
 
-        let slicerImgWrapperSelection: Selection<any> = listItemElement // TMP UpdateSelection
+        let slicerImgWrapperSelection: Selection<any> = listItemElement
             .selectAll(SampleSlicer.SlicerImgWrapperSelector.className)
             .data((dataPoint: SampleSlicerDataPoint) => {
                 return [dataPoint];
@@ -812,7 +834,7 @@ export class SampleSlicer implements IVisual {
             .exit()
             .remove();
 
-        let slicerTextWrapperSelection: Selection<any> = listItemElement // TMP UpdateSelection
+        let slicerTextWrapperSelection: Selection<any> = listItemElement
             .selectAll(SampleSlicer.SlicerTextWrapperSelector.selectorName)
             .data((dataPoint: SampleSlicerDataPoint) => {
                 return [dataPoint];
@@ -823,7 +845,7 @@ export class SampleSlicer implements IVisual {
             .append('div')
             .classed(SampleSlicer.SlicerTextWrapperSelector.className, true);
 
-        let labelTextSelection: Selection<any> = slicerTextWrapperSelection // TMP UpdateSelection
+        let labelTextSelection: Selection<any> = slicerTextWrapperSelection
             .selectAll(SampleSlicer.LabelTextSelector.selectorName)
             .data((dataPoint: SampleSlicerDataPoint) => {
                 return [dataPoint];
@@ -850,7 +872,6 @@ export class SampleSlicer implements IVisual {
             .remove();
     }
 
-    // HANDLER
     private updateSelection(rowSelection: Selection<any>): void {
         let settings: Settings = this.settings,
             data: SampleSlicerData = this.slicerData;
@@ -931,13 +952,7 @@ export class SampleSlicer implements IVisual {
         };
 
         callbacks.getFilterColumnTarget = (): IFilterColumnTarget => {
-            const categories: DataViewCategoricalColumn = this.dataView.categorical.categories[0];
             const target = interactivityFilterService.extractFilterColumnTarget(this.dataView.metadata.columns[0]);
-            // let target: IFilterColumnTarget = {
-            //     table: categories.source.queryName.substr(0, categories.source.queryName.indexOf('.')),
-            //     column: categories.source.displayName
-            // };
-
             return target;
         };
 
@@ -948,8 +963,6 @@ export class SampleSlicer implements IVisual {
                 return [];
             }
         };
-
-        console.log('> getCallbacks callbacks', callbacks);
 
         return callbacks;
     }

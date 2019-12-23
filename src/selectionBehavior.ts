@@ -62,7 +62,6 @@ import { Settings } from "./settings";
 import { ScalableRange } from "./scalableRange";
 import { SampleSlicerBehaviorOptions } from "./selectionBehavior";
 import { SampleSlicerDataPoint, SampleSlicerCallbacks } from "./sampleSlicer";
-import { MAX_VALUE } from "powerbi-visuals-utils-typeutils/lib/double";
 
 export interface SampleSlicerBehaviorOptions extends IBehaviorOptions<any>{
     slicerItemContainers: Selection<SelectableDataPoint>;
@@ -84,12 +83,18 @@ export class SelectionBehavior implements IInteractiveBehavior {
     private options: SampleSlicerBehaviorOptions;
     private dataPoints: SampleSlicerDataPoint[];
     private callbacks: SampleSlicerCallbacks;
+    // TMP private selectedDataPoints: SampleSlicerDataPoint[];
+
+    private static mapDataPointsToFilterValues (dataPoints: SampleSlicerDataPoint[]): string[] {
+        return (dataPoints
+            .map( (dataPoint: SampleSlicerDataPoint) => (dataPoint.category || null) ) || [])
+            .filter( (value: string | null ) => (typeof value === 'string') );
+    }
 
     constructor(callbacks: SampleSlicerCallbacks) {
         this.scalableRange = new ScalableRange();
         this.callbacks = callbacks;
     }
-
 
     /**
         Implementation of IInteractiveBehavior i/f
@@ -98,6 +103,7 @@ export class SelectionBehavior implements IInteractiveBehavior {
         const slicers: Selection<SelectableDataPoint> = this.slicers = options.slicerItemContainers;
 
         this.dataPoints = options.dataPoints;
+        // TMP this.selectedDataPoints = [];
         this.interactivityService = options.interactivityService;
         this.slicerSettings = options.slicerSettings;
         this.options = options;
@@ -112,39 +118,28 @@ export class SelectionBehavior implements IInteractiveBehavior {
 
             /* update selection state */
             selectionHandler.handleSelection(dataPoint, true /* isMultiSelect */);
-
+            // TMP this.toggleDataPoint(dataPoint);
+            
             /* send selection state to the host*/
-            console.error('TODO applySelectionFilter', dataPoint);
-
-            //selectionHandler.applySelectionFilter(); // TMP comment bc applySelectionFilter
-          //   let filter: IBasicFilter = {
-          //     $schema: "http://powerbi.com/product/schema#tuple",
-          //     filterType: 1,
-          //     operator: "In",
-          //     target: {
-          //         table: "Region",
-          //         column: "Region.Key1"
-          //     },
-          //     values: [
-          //         24
-          //     ]
-          // }
-            let filter: IBasicFilter =  {
-              //  $schema: "http://powerbi.com/product/schema#basic",
-              $schema: "http://powerbi.com/product/schema#tuple",
-              filterType: 1,
-              operator: "In",
-              target: this.callbacks.getFilterColumnTarget(), 
-              values:  [dataPoint.category]
-              //...(new BasicFilter(
-                  //this.callbacks.getFilterColumnTarget(), 
-                //   "In", 
-                //   [dataPoint.category]
-                // ))
-              };
-            this.callbacks.applyFilter(filter);
+            let filterValues = SelectionBehavior.mapDataPointsToFilterValues(this.dataPoints.filter((dataPoint) => dataPoint.selected));
+            console.log('filterValues', filterValues);
+            
+            if (filterValues.length === 0) {
+                this.clearFilters();
+            }
+            else {
+                let filter: IBasicFilter = {
+                    $schema: "http://powerbi.com/product/schema#basic",
+                    ...(new BasicFilter(
+                        this.callbacks.getFilterColumnTarget(), 
+                        "In",
+                        filterValues 
+                        
+                    ))
+                };
+                this.callbacks.applyFilter(filter);
+            }
         });
-
     }
 
     /**
@@ -207,27 +202,16 @@ export class SelectionBehavior implements IInteractiveBehavior {
                 value: value.max
             });
         }
-        
-        const valuesInRange: string[] = this.dataPoints
-        .map((dp: SampleSlicerDataPoint) => dp.category)
-        .filter( (current) => (Number(current) >= value.min) && (Number(current) <= value.max))
-        
-        console.info(
-          '!!! updateOnRangeSelectonChange > scalableRange.getValue()!', this.scalableRange.getValue(),
-          '\n this.dataPoints', this.dataPoints,
-          '\n values in range', valuesInRange);
-        
-        console.error('TODO applySelectionFilter');
-        let filter: IBasicFilter = {
-          $schema: "http://powerbi.com/product/schema#tuple",
-          ...(new BasicFilter(target, "In", valuesInRange))
-        };
-        // let filter: IAdvancedFilter = {
-        //   $schema: "http://powerbi.com/product/schema#advanced",
-        //   ...(new AdvancedFilter(target, "And", conditions))
-        // }
-          // TMP  new window['powerbi-models'].AdvancedFilter(target, "And", conditions);
-        // TMP IAdvancedFilter
+
+        let filter: IAdvancedFilter = {
+          $schema: "http://powerbi.com/product/schema#advanced",
+          ...(new AdvancedFilter(target, "And", conditions))
+        }
+
         this.callbacks.applyFilter(filter);
+    }
+
+    public clearFilters(): void {
+        this.callbacks.applyFilter(null);
     }
 }
