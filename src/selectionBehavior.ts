@@ -83,7 +83,6 @@ export class SelectionBehavior implements IInteractiveBehavior {
     private options: SampleSlicerBehaviorOptions;
     private dataPoints: SampleSlicerDataPoint[];
     private callbacks: SampleSlicerCallbacks;
-    // TMP private selectedDataPoints: SampleSlicerDataPoint[];
 
     private static mapDataPointsToFilterValues (dataPoints: SampleSlicerDataPoint[]): string[] {
         return (dataPoints
@@ -103,7 +102,6 @@ export class SelectionBehavior implements IInteractiveBehavior {
         const slicers: Selection<SelectableDataPoint> = this.slicers = options.slicerItemContainers;
 
         this.dataPoints = options.dataPoints;
-        // TMP this.selectedDataPoints = [];
         this.interactivityService = options.interactivityService;
         this.slicerSettings = options.slicerSettings;
         this.options = options;
@@ -112,18 +110,14 @@ export class SelectionBehavior implements IInteractiveBehavior {
 
         slicers.on("click", (dataPoint: SampleSlicerDataPoint, index: number) => {
             (d3Event as MouseEvent).preventDefault();
-            console.warn("slicers onClick");
-            console.log('dataPoint', dataPoint);
             this.clearRangeSelection();
 
             /* update selection state */
             selectionHandler.handleSelection(dataPoint, true /* isMultiSelect */);
-            // TMP this.toggleDataPoint(dataPoint);
-            
+
             /* send selection state to the host*/
             let filterValues = SelectionBehavior.mapDataPointsToFilterValues(this.dataPoints.filter((dataPoint) => dataPoint.selected));
-            console.log('filterValues', filterValues);
-            
+
             if (filterValues.length === 0) {
                 this.clearFilters();
             }

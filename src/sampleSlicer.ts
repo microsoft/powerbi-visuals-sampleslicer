@@ -56,21 +56,20 @@ import VisualObjectInstanceEnumeration = powerbiVisualsApi.VisualObjectInstanceE
 import EnumerateVisualObjectInstancesOptions = powerbiVisualsApi.EnumerateVisualObjectInstancesOptions;
 import VisualObjectInstancesToPersist = powerbiVisualsApi.VisualObjectInstancesToPersist;
 
-//TMP 2.5 import DataViewScopeIdentity = powerbiVisualsApi.DataViewScopeIdentity;
 import DataViewObjectPropertyIdentifier = powerbiVisualsApi.DataViewObjectPropertyIdentifier;
 import IVisualEventService = powerbiVisualsApi.extensibility.IVisualEventService;
 
-import IVisual = powerbiVisualsApi.extensibility.visual.IVisual; // powerbiVisualsApi.extensibility.IVisual;
+import IVisual = powerbiVisualsApi.extensibility.visual.IVisual;
 import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
 import ISelectionManager = powerbiVisualsApi.extensibility.ISelectionManager;
 import VisualUpdateOptions = powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
 import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
-//TMP 2.5 import DataRepetitionSelector = powerbiVisualsApi.data.DataRepetitionSelector
 
 import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 
-// powerbi.extensibility.utils.dataview
+// powerbi-visuals-utils-dataviewutils
 import { dataViewObjects as DataViewObjectsModule } from "powerbi-visuals-utils-dataviewutils";
+
 // powerbi-visuals-utils-typeutils
 import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutils";
 
@@ -274,7 +273,7 @@ export class SampleSlicer implements IVisual {
       };
     }
 
-    private static getLengthOptional(identity: any[]): number { // TMP DataViewScopeIdentity == DataRepetitionSelector ? // TMP : DataViewScopeIdentity[
+    private static getLengthOptional(identity: any[]): number {
         if (identity) {
             return identity.length;
         }
@@ -321,8 +320,8 @@ export class SampleSlicer implements IVisual {
         }
 
         for (let i: number = 0, len: number = dv1Categories.length; i < len; i++) {
-            let dv1Identity: any[] = (<DataViewCategoryColumn>dv1Categories[i]).identity; // TMP : DataViewScopeIdentity[
-            let dv2Identity: any[] = (<DataViewCategoryColumn>dv2Categories[i]).identity; // TMP : DataViewScopeIdentity[
+            let dv1Identity: any[] = (<DataViewCategoryColumn>dv1Categories[i]).identity;
+            let dv2Identity: any[] = (<DataViewCategoryColumn>dv2Categories[i]).identity;
 
             let dv1Length: number = this.getLengthOptional(dv1Identity);
             if ((dv1Length < 1) || dv1Length !== this.getLengthOptional(dv2Identity)) {
@@ -417,26 +416,24 @@ export class SampleSlicer implements IVisual {
         const settings: Settings = this.settings,
             slicerBodyViewport: IViewport = SampleSlicer.getSlicerBodyViewport(this.currentViewport);
 
-        console.log('initContainer. Settings: ', settings, '\n slicerBodyViewport', slicerBodyViewport);
-
         // Prevents visual container from doing any other actions on keypress
         this.root.addEventListener("keyup", (event: KeyboardEvent) => {
           event.stopPropagation()
         });
 
-        // this.root.addEventListener('contextmenu', (event) => {
-        //     const emptySelection = {
-        //         "measures": [],
-        //         "dataMap": {
-        //         }
-        //     };
+        this.root.addEventListener('contextmenu', (event) => {
+            const emptySelection = {
+                "measures": [],
+                "dataMap": {
+                }
+            };
             
-        //     this.selectionManager.showContextMenu(emptySelection, {
-        //         x: event.clientX,
-        //         y: event.clientY
-        //     });
-        //     event.preventDefault();
-        // });
+            this.selectionManager.showContextMenu(emptySelection, {
+                x: event.clientX,
+                y: event.clientY
+            });
+            event.preventDefault();
+        });
 
         this.root.addEventListener("keydown", (event: KeyboardEvent) =>{
             event.stopPropagation()
@@ -465,7 +462,6 @@ export class SampleSlicer implements IVisual {
     }
 
     private updateInternal(categoryIdentityChanged: boolean): void {
-        // console.log('updateInternal categoryIdentityChanged', categoryIdentityChanged);
         // convert data to internal representation
         const data = SampleSlicer.converter(
             this.dataView,
@@ -489,7 +485,7 @@ export class SampleSlicer implements IVisual {
         } else {
             this.isSelectionLoaded = false;
         }
-        console.warn('updateInternal new Data', data)
+        
         this.slicerData = data;
         this.settings = this.slicerData.slicerSettings;
 
@@ -569,7 +565,7 @@ export class SampleSlicer implements IVisual {
             viewport,
             baseContainer: slicerBody,
         };
-        console.log('tableViewOptions', tableViewOptions)
+        
         this.tableView = TableViewFactory.createTableView(tableViewOptions);
     }
 
@@ -637,7 +633,6 @@ export class SampleSlicer implements IVisual {
 
         this.startInput.addEventListener("focus", (event: Event) => {
             this.startInput.value = SampleSlicer.formatValue(this.behavior.scalableRange.getValue().min);
-            console.warn("focus min", SampleSlicer.formatValue(this.behavior.scalableRange.getValue().min));
             this.startInput.select();
         });
 
@@ -655,7 +650,6 @@ export class SampleSlicer implements IVisual {
 
         this.endInput.addEventListener("focus", (event: Event) => {
             this.endInput.value = SampleSlicer.formatValue(this.behavior.scalableRange.getValue().max);
-            console.warn("focus max", SampleSlicer.formatValue(this.behavior.scalableRange.getValue().max));
             this.endInput.select();
         });
     }
@@ -748,10 +742,6 @@ export class SampleSlicer implements IVisual {
         rangeValueType: RangeValueType,
         supressFilter: boolean = false
     ): void {
-        console.warn('!> onRangeInputTextboxChange: \n inputString', inputString,
-          '\n rangeValueType', rangeValueType,
-          '\n supressFilter', supressFilter
-        );
         // parse input
         let inputValue: number;
         if (!inputString) {
@@ -788,7 +778,6 @@ export class SampleSlicer implements IVisual {
     }
 
     private enterSelection(rowSelection: Selection<any>): void {
-        //console.warn('!> this.enterSelection: rowSelection', rowSelection);
         let settings: Settings = this.settings;
 
         let ulItemElement: Selection<any> = rowSelection
@@ -946,8 +935,7 @@ export class SampleSlicer implements IVisual {
         let callbacks: SampleSlicerCallbacks = {};
 
         callbacks.applyFilter = (filter: IFilter): void => {
-          console.warn('!!!applyFilter!!! filter', filter);
-
+          console.info('DEBUG INFO: this.visualHost.applyJsonFilter(filter, "general", "filter", FilterAction.merge);\n filter is:', filter);
           this.visualHost.applyJsonFilter(filter, "general", "filter", FilterAction.merge);
         };
 
