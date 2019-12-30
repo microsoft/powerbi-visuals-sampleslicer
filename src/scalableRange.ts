@@ -65,10 +65,10 @@ export class ScalableRange {
 
     public getScaledValue(): powerbiVisualsApi.ValueRange<number> {
         return {
-            min: (!this.range || !this.range.min) 
-                ? ScalableRange.TRANSFORMATION_RANGE_MIN 
+            min: (!this.range || (!this.range.min && this.range.min !== 0) )
+                ? ScalableRange.TRANSFORMATION_RANGE_MIN
                 : this.scalingTransformation(this.saturateDomainValue(this.range.min)),
-            max: (!this.range || !this.range.max) 
+            max: (!this.range || (!this.range.max && this.range.max !== 0))
                 ? ScalableRange.TRANSFORMATION_RANGE_MAX 
                 : this.scalingTransformation(this.saturateDomainValue(this.range.max)),
         };

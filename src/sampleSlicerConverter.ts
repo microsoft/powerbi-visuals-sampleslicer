@@ -47,11 +47,13 @@ export class SampleSlicerConverter {
     private category: DataViewCategoryColumn;
     private categoryValues: any[];
     private host: IVisualHost;
+    private filters: powerbiVisualsApi.IFilter[];
 
-    public constructor(dataView: DataView, host: IVisualHost) {
+    public constructor(dataView: DataView, host: IVisualHost, jsonFilters) {
         const dataViewCategorical: DataViewCategorical = dataView.categorical;
         this.dataViewCategorical = dataViewCategorical;
         this.host = host;
+        this.filters = jsonFilters;
         if (dataViewCategorical.categories && dataViewCategorical.categories.length > 0) {
             this.category = dataViewCategorical.categories[0];
             this.categoryValues = this.category.values;
@@ -61,6 +63,7 @@ export class SampleSlicerConverter {
 
     public convert(scalableRange: ScalableRange): void {
         this.dataPoints = [];
+        console.warn("convert", this.filters, this.categoryValues);
 
         if (this.categoryValues) {
             for (let categoryIndex: number = 0, categoryCount = this.categoryValues.length; categoryIndex < categoryCount; categoryIndex++) {
@@ -69,11 +72,20 @@ export class SampleSlicerConverter {
                 let categorySelectionId: ISelectionId = this.host.createSelectionIdBuilder()
                     .withCategory(this.category, categoryIndex)
                     .createSelectionId();
+                
+                let selected = !this.filters ? false : this.filters.reduce<boolean>(
+                    (acc: boolean, currentFilter: { operator: string, values: any[] }, index: number) => { 
+                        return acc || (
+                            currentFilter.operator === "In" && currentFilter.values && currentFilter.values.indexOf && (currentFilter.values.indexOf(categoryValue.toString()) !== -1)
+                        ); 
+                    }, 
+                    false);
 
+                console.log('categoryValue, selected', categoryValue, selected, this.dataPoints.map(dp => dp.selected).join());
                 this.dataPoints.push({
                     identity: categorySelectionId as ISelectionId,
                     category: categoryValue.toString(),
-                    selected: true,
+                    selected: selected,
                     filtered: false,
                     isSelectedRangePoint: scalableRange.isActive() && SampleSlicerConverter.isNumberWithinRange(categoryValue, scalableRange.getValue())
                 });
@@ -84,13 +96,14 @@ export class SampleSlicerConverter {
                 max: d3max(this.categoryValues),
             });
         }
+        console.warn("this.dataPoints", this.dataPoints.map(dp => dp.selected).join());
     }
 
     private static isNumberWithinRange(theNumber: number, subRange: ValueRange<number>): boolean {
-        if (subRange.min && subRange.min > theNumber) {
+        if ((subRange.min || subRange.min === 0) && subRange.min > theNumber) {
             return false;
         }
-        if (subRange.max && subRange.max < theNumber) {
+        if ((subRange.max || subRange.max === 0) && subRange.max < theNumber) {
             return false;
         }
         return true;

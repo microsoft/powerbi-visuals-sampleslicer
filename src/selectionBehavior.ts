@@ -34,8 +34,6 @@ import {
 type Selection<T> = D3Selection<any, T, any, any>;
 
 import {
-  TupleFilter,
-  ITupleFilter,
   IBasicFilter,
   BasicFilter,
   IAdvancedFilter,
@@ -60,7 +58,6 @@ import ISelectionHandler = interactivityBaseService.ISelectionHandler;
 
 import { Settings } from "./settings";
 import { ScalableRange } from "./scalableRange";
-import { SampleSlicerBehaviorOptions } from "./selectionBehavior";
 import { SampleSlicerDataPoint, SampleSlicerCallbacks } from "./sampleSlicer";
 
 export interface SampleSlicerBehaviorOptions extends IBehaviorOptions<any>{
@@ -68,7 +65,6 @@ export interface SampleSlicerBehaviorOptions extends IBehaviorOptions<any>{
     dataPoints: SampleSlicerDataPoint[];
     interactivityService: IInteractivityService<any>;
     slicerSettings: Settings;
-    isSelectionLoaded: boolean;
 }
 
 export class SelectionBehavior implements IInteractiveBehavior {
@@ -135,7 +131,7 @@ export class SelectionBehavior implements IInteractiveBehavior {
             }
         });
     }
-
+    
     /**
         Implementation of IInteractiveBehavior i/f
     */
@@ -176,21 +172,21 @@ export class SelectionBehavior implements IInteractiveBehavior {
         this.clearAllDiscreteSelections();
 
         let value: ValueRange<number> = this.scalableRange.getValue();
-        if (!value.min && !value.max) {
+        if (!value.min && value.min !== 0 && !value.max && value.max !== 0) {
             return;
         }
 
         let conditions: IAdvancedFilterCondition[] = [];
         let target: IFilterColumnTarget = this.callbacks.getFilterColumnTarget();
 
-        if (value.min) {
+        if (value.min || value.min === 0) {
             conditions.push({
                 operator: "GreaterThan",
                 value: value.min
             });
         }
 
-        if (value.max) {
+        if (value.max || value.max === 0) {
             conditions.push({
                 operator: "LessThan",
                 value: value.max

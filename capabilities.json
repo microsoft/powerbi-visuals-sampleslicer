@@ -59,6 +59,7 @@
       }
     }
   },
+  "supportsHighlight": true,
   "suppressDefaultTitle": true,
   "supportsSynchronizingFilterState": true
 }

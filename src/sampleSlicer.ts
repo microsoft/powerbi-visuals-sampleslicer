@@ -139,6 +139,7 @@ export class SampleSlicer implements IVisual {
 
     private visualHost: IVisualHost;
     private settings: Settings;
+    private jsonFilters: powerbiVisualsApi.IFilter[];
 
     // DOM Elements
     private root: HTMLElement;
@@ -169,8 +170,7 @@ export class SampleSlicer implements IVisual {
 
     //state
     private waitingForData: boolean;
-    private isSelectionLoaded: boolean;
-    private isSelectionSaved: boolean;
+    private updateFilter: boolean; // DEV
 
     // Constants
     public static DefaultFontFamily: string = "helvetica, arial, sans-serif";
@@ -204,7 +204,9 @@ export class SampleSlicer implements IVisual {
         dataView: DataView,
         searchText: string,
         scalableRange: ScalableRange,
-        visualHost: IVisualHost): SampleSlicerData {
+        visualHost: IVisualHost,
+        jsonFilters: powerbiVisualsApi.IFilter[]
+        ): SampleSlicerData {
 
         if (!dataView ||
             !dataView.categorical ||
@@ -215,9 +217,9 @@ export class SampleSlicer implements IVisual {
             return;
         }
 
-        const converter: SampleSlicerConverter = new SampleSlicerConverter(dataView, visualHost);
+        const converter: SampleSlicerConverter = new SampleSlicerConverter(dataView, visualHost, jsonFilters);
         converter.convert(scalableRange);
-
+        
         const slicerSettings: Settings = defaultSettings;
 
         if (dataView.metadata.objects) {
@@ -249,7 +251,7 @@ export class SampleSlicer implements IVisual {
         }
 
         const categories: DataViewCategoricalColumn = dataView.categorical.categories[0];
-
+        console.warn('converter.dataPoints', converter.dataPoints, converter.dataPoints.map(dp => dp.selected).join())
         return <SampleSlicerData> {
             categorySourceName: categories.source.displayName,
             formatString: valueFormatter.getFormatStringByColumn(categories.source),
@@ -370,7 +372,6 @@ export class SampleSlicer implements IVisual {
         }
 
         this.eventService.renderingStarted(options);
-        
 
         // create viewport if not yet created
         if (!this.currentViewport) {
@@ -382,7 +383,6 @@ export class SampleSlicer implements IVisual {
         const existingDataView = this.dataView;
         this.dataView = options.dataViews[0];
 
-        
         // check if the dataView changed to determine if scrollbars need to be reset
         let categoryIdentityChanged: boolean = true;
         if (existingDataView) {
@@ -399,10 +399,24 @@ export class SampleSlicer implements IVisual {
         }
         console.warn("UPDATE");
         console.info("options:", options, 
-            "\n options.jsonFilters[0]", options.jsonFilters || options.jsonFilters[0],  
             "\n this.dataView", this.dataView, 
             "\n currentViewport", this.currentViewport, 
             "\n waitingForData", this.waitingForData);
+
+        
+        // if (options.jsonFilters) {
+        //     console.log('options.jsonFilters', options.jsonFilters && options.jsonFilters[0]);
+        //     console.log('this.jsonFilters', this.jsonFilters && this.jsonFilters[0]);
+        //     if (this.jsonFilters != options.jsonFilters 
+        //         || (
+        //             this.jsonFilters && this.jsonFilters[0] && options.jsonFilters && options.jsonFilters[0] 
+        //             && (this.jsonFilters[0] != options.jsonFilters[0])
+        //         )
+        //     ){
+                this.jsonFilters = options.jsonFilters;
+        //         this.updateFilter = true;
+        //     }
+        // }
 
         this.updateInternal(categoryIdentityChanged);
         this.eventService.renderingFinished(options);
@@ -441,7 +455,7 @@ export class SampleSlicer implements IVisual {
         const outerContainer = SampleSlicer.createElement("<div class='sampleSlicer outerContainer' />");
         this.root.appendChild(outerContainer)
         
-        this.initClearButton(outerContainer);
+        // this.initClearButton(outerContainer); //Temporary unavailable
         this.initHeader(outerContainer);
         this.initRangeSlicer(outerContainer);
 
@@ -467,25 +481,17 @@ export class SampleSlicer implements IVisual {
             this.dataView,
             (<HTMLInputElement>this.searchInput).value,
             this.behavior.scalableRange,
-            this.visualHost);
+            this.visualHost,
+            this.jsonFilters
+        );
 
         if (!data) {
             this.tableView.empty();
             return;
         }
 
-        //this.restoreFilter(data);
+        this.restoreFilter(this.jsonFilters);
 
-        if (this.slicerData) {
-            if (this.isSelectionSaved) {
-                this.isSelectionLoaded = true;
-            } else {
-                this.isSelectionLoaded = this.slicerData.slicerSettings.general.selection === data.slicerSettings.general.selection;
-            }
-        } else {
-            this.isSelectionLoaded = false;
-        }
-        
         this.slicerData = data;
         this.settings = this.slicerData.slicerSettings;
 
@@ -496,6 +502,22 @@ export class SampleSlicer implements IVisual {
 
         this.updateRangeSlicer();
     }
+
+    private restoreFilter(filters: powerbiVisualsApi.IFilter[]) {
+        //const filter = this.jsonFilters;
+        console.warn('restoreFilter')
+        console.log('- filters', filters);
+        console.log('- this.slicerData.slicerDataPoints', !this.slicerData || this.slicerData.slicerDataPoints );
+        console.log('- this.behavior.scalableRange.getValue()', this.behavior.scalableRange.getValue())
+        // console.log('restoreFilter data', data);
+
+        // if (filters && filters[0]) {
+        //     console.log('this.visualHost', this.visualHost);
+        //     this.visualHost.applyJsonFilter(filters[0], "general", "filter", FilterAction.merge);
+        //     console.warn('!!! applyed, restoreFilter filters[0]', filters[0]);
+        // }
+    }
+
     /* 
      * Visual parts initialization and update
      */
@@ -565,28 +587,30 @@ export class SampleSlicer implements IVisual {
             viewport,
             baseContainer: slicerBody,
         };
-        
+
         this.tableView = TableViewFactory.createTableView(tableViewOptions);
     }
 
     private updateTableView(resetScrollbarPosition: boolean): void {
-      const slicerDataPoints: SampleSlicerDataPoint[] = this.slicerData.slicerDataPoints,
-          slicerText = this.settings.slicerText,
-          rows = this.settings.general.rows,
-          columns = this.settings.general.columns;
+        const slicerDataPoints: SampleSlicerDataPoint[] = this.slicerData.slicerDataPoints,
+            slicerText = this.settings.slicerText,
+            rows = this.settings.general.rows,
+            columns = this.settings.general.columns;
+        console.warn("updateTableView");
+        console.log('slicerDataPoints', slicerDataPoints);
 
-      this.tableView
-          .rowHeight(slicerText.height)
-          .columnWidth(slicerText.width)
-          .rows(rows)
-          .columns(columns)
-          .data(
-              slicerDataPoints.filter(x => !x.filtered),
-              (d: SampleSlicerDataPoint) => slicerDataPoints.indexOf(d),
-              resetScrollbarPosition
-          )
-          .viewport(SampleSlicer.getSlicerBodyViewport(this.currentViewport))
-          .render();
+        this.tableView
+            .rowHeight(slicerText.height)
+            .columnWidth(slicerText.width)
+            .rows(rows)
+            .columns(columns)
+            .data(
+                slicerDataPoints.filter(x => !x.filtered),
+                (d: SampleSlicerDataPoint) => slicerDataPoints.indexOf(d),
+                resetScrollbarPosition
+            )
+            .viewport(SampleSlicer.getSlicerBodyViewport(this.currentViewport))
+            .render();
     }
 
     private initRangeSlicer(parent: HTMLElement): void {
@@ -662,6 +686,7 @@ export class SampleSlicer implements IVisual {
             // get the scaled range value
             // and use it to set the slider
             let scaledValue = this.behavior.scalableRange.getScaledValue();
+            console.warn('scaledValue', scaledValue)
             this.slider.set([scaledValue.min, scaledValue.max]);
         }
 
@@ -752,7 +777,6 @@ export class SampleSlicer implements IVisual {
                 inputValue = null;
             }
         }
-
         // update range selection model if changed
         let range: ValueRange<number> = this.behavior.scalableRange.getValue();
         if (rangeValueType === RangeValueType.Start) {
@@ -770,7 +794,7 @@ export class SampleSlicer implements IVisual {
 
         if (!supressFilter) {
             this.behavior.scalableRange.setValue(range);
-
+            
             // trigger range change processing
             this.behavior.updateOnRangeSelectonChange();
             this.updateInternal(false);
@@ -912,7 +936,6 @@ export class SampleSlicer implements IVisual {
                     slicerItemContainers: slicerItemContainers,
                     interactivityService: this.interactivityService,
                     slicerSettings: data.slicerSettings,
-                    isSelectionLoaded: this.isSelectionLoaded,
                     behavior:  this.behavior
                 };
 

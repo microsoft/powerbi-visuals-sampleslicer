@@ -1,6 +1,6 @@
 {
   "name": "powerbi-visuals-sampleslicer",
-  "version": "2.0.0",
+  "version": "2.0.3",
   "author": {
     "name": "Microsoft"
   },
@@ -10,7 +10,6 @@
     "url": "git+https://github.com/Microsoft/powerbi-visuals-sampleslicer"
   },
   "scripts": {
-    "postinstall": "pbiviz update",
     "pbiviz": "pbiviz",
     "start": "pbiviz start",
     "package": "pbiviz package",
