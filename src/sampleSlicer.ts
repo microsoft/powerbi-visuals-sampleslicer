@@ -75,12 +75,14 @@ import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutil
 
 // powerbi-visuals-utils-interactivityutils
 import {
-  interactivityBaseService,
-  interactivitySelectionService,
-  interactivityFilterService,
+    interactivityBaseService,
+    interactivitySelectionService,
+    interactivityFilterService,
 } from "powerbi-visuals-utils-interactivityutils";
 
-import createInteractivitySelectionService = interactivitySelectionService.createInteractivitySelectionService;
+
+import createInteractivityFilterService = interactivityFilterService.createInteractivityFilterService;
+import InteractivityFilterService = interactivityFilterService.InteractivityFilterService;
 import IInteractivityService = interactivityBaseService.IInteractivityService;
 import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
 
@@ -101,6 +103,7 @@ import { ScalableRange } from "./scalableRange";
 import { ITableView, TableViewOptions,  TableViewFactory } from "./tableView";
 import { SelectionBehavior, SampleSlicerBehaviorOptions } from "./selectionBehavior";
 import { SampleSlicerConverter } from "./sampleSlicerConverter";
+import { FilterDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityFilterService";
 
 export const enum RangeValueType {
     Start,
@@ -114,8 +117,9 @@ export interface SampleSlicerData {
     slicerSettings: Settings;
 }
 
-export interface SampleSlicerDataPoint extends SelectableDataPoint {
-    category?: string;
+export interface SampleSlicerDataPoint extends FilterDataPoint {// DEV SelectableDataPoint {
+    identity?:  any; // DEV
+    category: string;
     isSelectedRangePoint?: boolean;
     filtered?: boolean;
 }
@@ -133,7 +137,7 @@ export class SampleSlicer implements IVisual {
     private dataView: DataView;
     private slicerData: SampleSlicerData;
 
-    private interactivityService: IInteractivityService<any>;
+    private interactivityService: InteractivityFilterService; // DEV IInteractivityService<any>;
     private selectionManager: ISelectionManager;
     private eventService: IVisualEventService;
 
@@ -352,7 +356,7 @@ export class SampleSlicer implements IVisual {
         this.root = options.element;
         this.visualHost = options.host;
         this.behavior = new SelectionBehavior(this.getCallbacks());
-        this.interactivityService = createInteractivitySelectionService(options.host);
+        this.interactivityService = createInteractivityFilterService(options.host);
 
         this.settings = defaultSettings;
         this.eventService = options.host.eventService;
@@ -403,7 +407,6 @@ export class SampleSlicer implements IVisual {
             "\n currentViewport", this.currentViewport, 
             "\n waitingForData", this.waitingForData);
 
-        
         // if (options.jsonFilters) {
         //     console.log('options.jsonFilters', options.jsonFilters && options.jsonFilters[0]);
         //     console.log('this.jsonFilters', this.jsonFilters && this.jsonFilters[0]);
@@ -477,7 +480,7 @@ export class SampleSlicer implements IVisual {
 
     private updateInternal(categoryIdentityChanged: boolean): void {
         // convert data to internal representation
-        const data = SampleSlicer.converter(
+        let data = SampleSlicer.converter(
             this.dataView,
             (<HTMLInputElement>this.searchInput).value,
             this.behavior.scalableRange,
@@ -489,16 +492,21 @@ export class SampleSlicer implements IVisual {
             this.tableView.empty();
             return;
         }
-
-        this.restoreFilter(this.jsonFilters);
-
+        // this.restoreFilter(this.jsonFilters);
+        
         this.slicerData = data;
+       
         this.settings = this.slicerData.slicerSettings;
-
+        
         this.slicerBody
-          .style('height', `${this.currentViewport.height - 120}px`);
+            .style('height', `${this.currentViewport.height - 120}px`);
+        
+        console.info('updateInternal data.slicerDataPoints', data.slicerDataPoints.map((dp) => dp.selected).join());
+        console.info('updateInternal this.slicerData.slicerDataPoints', this.slicerData.slicerDataPoints.map((dp) => dp.selected).join());
 
         this.updateTableView(categoryIdentityChanged);
+        console.info('updateInternal data.slicerDataPoints', data.slicerDataPoints.map((dp) => dp.selected).join());
+        console.info('updateInternal this.slicerData.slicerDataPoints', this.slicerData.slicerDataPoints.map((dp) => dp.selected).join());
 
         this.updateRangeSlicer();
     }
@@ -507,7 +515,7 @@ export class SampleSlicer implements IVisual {
         //const filter = this.jsonFilters;
         console.warn('restoreFilter')
         console.log('- filters', filters);
-        console.log('- this.slicerData.slicerDataPoints', !this.slicerData || this.slicerData.slicerDataPoints );
+        console.log('- this.slicerData.slicerDataPoints', !this.slicerData || this.slicerData.slicerDataPoints.map((dp) => dp.selected).join());
         console.log('- this.behavior.scalableRange.getValue()', this.behavior.scalableRange.getValue())
         // console.log('restoreFilter data', data);
 
@@ -592,12 +600,14 @@ export class SampleSlicer implements IVisual {
     }
 
     private updateTableView(resetScrollbarPosition: boolean): void {
-        const slicerDataPoints: SampleSlicerDataPoint[] = this.slicerData.slicerDataPoints,
+        let slicerDataPoints: SampleSlicerDataPoint[] = this.slicerData.slicerDataPoints,
             slicerText = this.settings.slicerText,
             rows = this.settings.general.rows,
             columns = this.settings.general.columns;
+
         console.warn("updateTableView");
-        console.log('slicerDataPoints', slicerDataPoints);
+        console.info('updateTableView data.slicerDataPoints', slicerDataPoints, slicerDataPoints.map((dp) => dp.selected).join());
+        console.info('updateTableView this.slicerData.slicerDataPoints',this.slicerData.slicerDataPoints, this.slicerData.slicerDataPoints.map((dp) => dp.selected).join());
 
         this.tableView
             .rowHeight(slicerText.height)
@@ -926,7 +936,9 @@ export class SampleSlicer implements IVisual {
                 .style('font-size', PixelConverter.fromPoint(settings.slicerText.textSize));
 
             if (this.interactivityService && this.slicerBody) {
-                this.interactivityService.applySelectionStateToData(data.slicerDataPoints);
+                console.info('updateSelection data.slicerDataPoints after', data.slicerDataPoints.map((dp) => dp.selected).join());
+                //this.interactivityService.applySelectionStateToData(data.slicerDataPoints);
+                console.info('updateSelection data.slicerDataPoints before', data.slicerDataPoints.map((dp) => dp.selected).join());
 
                 let slicerBody: Selection<any> = this.slicerBody.attr('width', this.currentViewport.width),
                     slicerItemContainers: Selection<any> = slicerBody.selectAll(SampleSlicer.ItemContainerSelector.selectorName);
@@ -936,7 +948,10 @@ export class SampleSlicer implements IVisual {
                     slicerItemContainers: slicerItemContainers,
                     interactivityService: this.interactivityService,
                     slicerSettings: data.slicerSettings,
-                    behavior:  this.behavior
+                    behavior:  this.behavior,
+                    dataView: this.dataView,
+                    category: this.dataView.categorical.categories[0],
+                    jsonFilters: this.jsonFilters,
                 };
 
                 this.interactivityService.bind(behaviorOptions); //data.slicerDataPoints, this.behavior, behaviorOptions, {      });

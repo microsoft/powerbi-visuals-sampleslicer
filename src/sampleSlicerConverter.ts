@@ -47,13 +47,13 @@ export class SampleSlicerConverter {
     private category: DataViewCategoryColumn;
     private categoryValues: any[];
     private host: IVisualHost;
-    private filters: powerbiVisualsApi.IFilter[];
+    private jsonFilters: powerbiVisualsApi.IFilter[];
 
-    public constructor(dataView: DataView, host: IVisualHost, jsonFilters) {
+    public constructor(dataView: DataView, host: IVisualHost, jsonFilters: powerbiVisualsApi.IFilter[]) {
         const dataViewCategorical: DataViewCategorical = dataView.categorical;
         this.dataViewCategorical = dataViewCategorical;
         this.host = host;
-        this.filters = jsonFilters;
+        this.jsonFilters = jsonFilters;
         if (dataViewCategorical.categories && dataViewCategorical.categories.length > 0) {
             this.category = dataViewCategorical.categories[0];
             this.categoryValues = this.category.values;
@@ -63,7 +63,7 @@ export class SampleSlicerConverter {
 
     public convert(scalableRange: ScalableRange): void {
         this.dataPoints = [];
-        console.warn("convert", this.filters, this.categoryValues);
+        console.warn("convert", this.jsonFilters, this.categoryValues);
 
         if (this.categoryValues) {
             for (let categoryIndex: number = 0, categoryCount = this.categoryValues.length; categoryIndex < categoryCount; categoryIndex++) {
@@ -73,10 +73,13 @@ export class SampleSlicerConverter {
                     .withCategory(this.category, categoryIndex)
                     .createSelectionId();
                 
-                let selected = !this.filters ? false : this.filters.reduce<boolean>(
+                let selected = !this.jsonFilters ? false : this.jsonFilters.reduce<boolean>(
                     (acc: boolean, currentFilter: { operator: string, values: any[] }, index: number) => { 
                         return acc || (
-                            currentFilter.operator === "In" && currentFilter.values && currentFilter.values.indexOf && (currentFilter.values.indexOf(categoryValue.toString()) !== -1)
+                            currentFilter.operator === "In" 
+                            && currentFilter.values 
+                            && currentFilter.values.indexOf 
+                            && (currentFilter.values.indexOf(categoryValue.toString()) !== -1)
                         ); 
                     }, 
                     false);
