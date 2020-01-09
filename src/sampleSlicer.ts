@@ -41,6 +41,9 @@ type Selection<T> = D3Selection<any, T, any, any>;
 import {
   IFilter,
   IFilterColumnTarget,
+  IAdvancedFilter,
+  Filter,
+  PrimitiveValueType,
 } from "powerbi-models";
 
 import powerbiVisualsApi from "powerbi-visuals-api";
@@ -210,7 +213,7 @@ export class SampleSlicer implements IVisual {
         scalableRange: ScalableRange,
         visualHost: IVisualHost,
         jsonFilters: powerbiVisualsApi.IFilter[]
-        ): SampleSlicerData {
+    ): SampleSlicerData {
 
         if (!dataView ||
             !dataView.categorical ||
@@ -376,6 +379,9 @@ export class SampleSlicer implements IVisual {
 
         this.eventService.renderingStarted(options);
 
+        this.jsonFilters = options.jsonFilters;
+        this.restoreRangeFilter(options.dataViews[0]);
+
         // create viewport if not yet created
         if (!this.currentViewport) {
           this.currentViewport = options.viewport;
@@ -406,7 +412,6 @@ export class SampleSlicer implements IVisual {
             "\n currentViewport", this.currentViewport,
             "\n waitingForData", this.waitingForData);
 
-        this.jsonFilters = options.jsonFilters;
 
         this.updateInternal(categoryIdentityChanged);
         this.eventService.renderingFinished(options);
@@ -444,7 +449,8 @@ export class SampleSlicer implements IVisual {
         });
         const outerContainer = SampleSlicer.createElement("<div class='sampleSlicer outerContainer' />");
         this.root.appendChild(outerContainer)
-        
+
+
         // this.initClearButton(outerContainer); //Temporary unavailable
         this.initHeader(outerContainer);
         this.initRangeSlicer(outerContainer);
@@ -727,6 +733,36 @@ export class SampleSlicer implements IVisual {
         );
 
         this.searchWrapper.appendChild(this.searchInput);
+    }
+
+    private restoreRangeFilter(dataView: DataView){
+        if (this.jsonFilters && 
+            (dataView.metadata && dataView.metadata.columns && dataView.metadata.columns[0])
+        ){
+            const filter: IAdvancedFilter = <IAdvancedFilter> this.jsonFilters.find((filter: IAdvancedFilter) => {
+                const target: { table?: string, column?: string} = <any>filter.target;
+                const source: string[] | undefined = String(dataView.metadata.columns[0].queryName).split('.');
+                if(source && source[0] && source[1]){
+                    return filter.logicalOperator == "And" && filter.target && target.table === source[0] && target.column === source[1];
+                } else {
+                    return false;
+                }
+            });
+
+            if (filter && filter.conditions) {
+                const greaterThen = filter.conditions.find(cond => cond.operator === "GreaterThan"),
+                    lessThen = filter.conditions.find(cond => cond.operator === "LessThan");
+                const range: {
+                    min: number | null;
+                    max: number | null;
+                } = {
+                    min: greaterThen ? Number(greaterThen.value) : null,
+                    max: lessThen ? Number(lessThen.value) : null
+                };
+
+                this.behavior.scalableRange.setValue(range);
+            }
+        }
     }
 
     /*
