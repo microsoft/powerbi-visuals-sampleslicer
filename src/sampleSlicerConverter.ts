@@ -63,7 +63,6 @@ export class SampleSlicerConverter {
 
     public convert(scalableRange: ScalableRange): void {
         this.dataPoints = [];
-        console.warn("convert", this.jsonFilters, this.categoryValues);
 
         if (this.categoryValues) {
             for (let categoryIndex: number = 0, categoryCount = this.categoryValues.length; categoryIndex < categoryCount; categoryIndex++) {
@@ -72,7 +71,7 @@ export class SampleSlicerConverter {
                 let categorySelectionId: ISelectionId = this.host.createSelectionIdBuilder()
                     .withCategory(this.category, categoryIndex)
                     .createSelectionId();
-                
+
                 let selected = !this.jsonFilters ? false : this.jsonFilters.reduce<boolean>(
                     (acc: boolean, currentFilter: { operator: string, values: any[] }, index: number) => { 
                         return acc || (
@@ -84,7 +83,6 @@ export class SampleSlicerConverter {
                     }, 
                     false);
 
-                console.log('categoryValue, selected', categoryValue, selected, this.dataPoints.map(dp => dp.selected).join());
                 this.dataPoints.push({
                     identity: categorySelectionId as ISelectionId,
                     category: categoryValue.toString(),
@@ -99,14 +97,13 @@ export class SampleSlicerConverter {
                 max: d3max(this.categoryValues),
             });
         }
-        console.warn("this.dataPoints", this.dataPoints.map(dp => dp.selected).join());
     }
 
     private static isNumberWithinRange(theNumber: number, subRange: ValueRange<number>): boolean {
-        if ((subRange.min || subRange.min === 0) && subRange.min > theNumber) {
+        if ((subRange.min || subRange.min === 0) && subRange.min >= theNumber) {
             return false;
         }
-        if ((subRange.max || subRange.max === 0) && subRange.max < theNumber) {
+        if ((subRange.max || subRange.max === 0) && subRange.max <= theNumber) {
             return false;
         }
         return true;

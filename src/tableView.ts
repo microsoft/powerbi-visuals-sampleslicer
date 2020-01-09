@@ -108,9 +108,8 @@ export class TableView implements ITableView {
 
     public constructor(options: TableViewOptions) {
         // make a copy of options so that it is not modified later by caller
-        this.options = { ...options }; // TMP JQUERY $.extend(true, {}, options);
+        this.options = { ...options };
 
-        console.log('TableView constructor options', options)
         this.options.baseContainer
             .style('overflow-y', 'auto')
             .attr('drag-resize-disabled', true);
@@ -167,14 +166,10 @@ export class TableView implements ITableView {
         return this;
     }
 
-    public data(data: any[], getDatumIndex: (d) => {}, dataReset: boolean = false): ITableView {
+    public data(data: any[], getDatumIndex: (d: any) => {}, dataReset: boolean = false): ITableView {
         this._data = data;
         this.getDatumIndex = getDatumIndex;
         this.setTotalRows();
-
-        if (dataReset) {
-            //$(this.options.baseContainer.node()).scrollTop(0); // TMP JQUERY
-        }
 
         return this;
     }
@@ -314,11 +309,11 @@ export class TableView implements ITableView {
             visibleGroupContainer: Selection<any> = this.visibleGroupContainer,
             rowHeight: number = options.rowHeight || TableView.defaultRowHeight,
             groupedData: TableViewGroupedData = this.getGroupedData(),
-            rowSelection: Selection<any>, // TMP UpdateSelection
-            cellSelection: Selection<any>; // TMP UpdateSelection
+            rowSelection: Selection<any>,
+            cellSelection: Selection<any>;
         
         let i = 0;
-        for (i = 0;  i<6; i++) { // TMP FIX
+        for (i = 0;  i<6; i++) { // UPDATE FIX
         rowSelection = visibleGroupContainer
             .selectAll(TableView.RowSelector.selectorName)
             .data(<SampleSlicerDataPoint[][]>groupedData.data);

@@ -137,7 +137,7 @@ export class SampleSlicer implements IVisual {
     private dataView: DataView;
     private slicerData: SampleSlicerData;
 
-    private interactivityService: InteractivityFilterService; // DEV IInteractivityService<any>;
+    private interactivityService: any; //InteractivityFilterService; // DEV IInteractivityService<any>;
     private selectionManager: ISelectionManager;
     private eventService: IVisualEventService;
 
@@ -255,7 +255,6 @@ export class SampleSlicer implements IVisual {
         }
 
         const categories: DataViewCategoricalColumn = dataView.categorical.categories[0];
-        console.warn('converter.dataPoints', converter.dataPoints, converter.dataPoints.map(dp => dp.selected).join())
         return <SampleSlicerData> {
             categorySourceName: categories.source.displayName,
             formatString: valueFormatter.getFormatStringByColumn(categories.source),
@@ -402,24 +401,12 @@ export class SampleSlicer implements IVisual {
             this.currentViewport = options.viewport;
         }
         console.warn("UPDATE");
-        console.info("options:", options, 
-            "\n this.dataView", this.dataView, 
-            "\n currentViewport", this.currentViewport, 
+        console.info("options:", options,
+            "\n this.dataView", this.dataView,
+            "\n currentViewport", this.currentViewport,
             "\n waitingForData", this.waitingForData);
 
-        // if (options.jsonFilters) {
-        //     console.log('options.jsonFilters', options.jsonFilters && options.jsonFilters[0]);
-        //     console.log('this.jsonFilters', this.jsonFilters && this.jsonFilters[0]);
-        //     if (this.jsonFilters != options.jsonFilters 
-        //         || (
-        //             this.jsonFilters && this.jsonFilters[0] && options.jsonFilters && options.jsonFilters[0] 
-        //             && (this.jsonFilters[0] != options.jsonFilters[0])
-        //         )
-        //     ){
-                this.jsonFilters = options.jsonFilters;
-        //         this.updateFilter = true;
-        //     }
-        // }
+        this.jsonFilters = options.jsonFilters;
 
         this.updateInternal(categoryIdentityChanged);
         this.eventService.renderingFinished(options);
@@ -492,7 +479,6 @@ export class SampleSlicer implements IVisual {
             this.tableView.empty();
             return;
         }
-        // this.restoreFilter(this.jsonFilters);
         
         this.slicerData = data;
        
@@ -500,30 +486,10 @@ export class SampleSlicer implements IVisual {
         
         this.slicerBody
             .style('height', `${this.currentViewport.height - 120}px`);
-        
-        console.info('updateInternal data.slicerDataPoints', data.slicerDataPoints.map((dp) => dp.selected).join());
-        console.info('updateInternal this.slicerData.slicerDataPoints', this.slicerData.slicerDataPoints.map((dp) => dp.selected).join());
 
         this.updateTableView(categoryIdentityChanged);
-        console.info('updateInternal data.slicerDataPoints', data.slicerDataPoints.map((dp) => dp.selected).join());
-        console.info('updateInternal this.slicerData.slicerDataPoints', this.slicerData.slicerDataPoints.map((dp) => dp.selected).join());
 
         this.updateRangeSlicer();
-    }
-
-    private restoreFilter(filters: powerbiVisualsApi.IFilter[]) {
-        //const filter = this.jsonFilters;
-        console.warn('restoreFilter')
-        console.log('- filters', filters);
-        console.log('- this.slicerData.slicerDataPoints', !this.slicerData || this.slicerData.slicerDataPoints.map((dp) => dp.selected).join());
-        console.log('- this.behavior.scalableRange.getValue()', this.behavior.scalableRange.getValue())
-        // console.log('restoreFilter data', data);
-
-        // if (filters && filters[0]) {
-        //     console.log('this.visualHost', this.visualHost);
-        //     this.visualHost.applyJsonFilter(filters[0], "general", "filter", FilterAction.merge);
-        //     console.warn('!!! applyed, restoreFilter filters[0]', filters[0]);
-        // }
     }
 
     /* 
@@ -604,10 +570,6 @@ export class SampleSlicer implements IVisual {
             slicerText = this.settings.slicerText,
             rows = this.settings.general.rows,
             columns = this.settings.general.columns;
-
-        console.warn("updateTableView");
-        console.info('updateTableView data.slicerDataPoints', slicerDataPoints, slicerDataPoints.map((dp) => dp.selected).join());
-        console.info('updateTableView this.slicerData.slicerDataPoints',this.slicerData.slicerDataPoints, this.slicerData.slicerDataPoints.map((dp) => dp.selected).join());
 
         this.tableView
             .rowHeight(slicerText.height)
@@ -696,7 +658,6 @@ export class SampleSlicer implements IVisual {
             // get the scaled range value
             // and use it to set the slider
             let scaledValue = this.behavior.scalableRange.getScaledValue();
-            console.warn('scaledValue', scaledValue)
             this.slider.set([scaledValue.min, scaledValue.max]);
         }
 
@@ -936,9 +897,7 @@ export class SampleSlicer implements IVisual {
                 .style('font-size', PixelConverter.fromPoint(settings.slicerText.textSize));
 
             if (this.interactivityService && this.slicerBody) {
-                console.info('updateSelection data.slicerDataPoints after', data.slicerDataPoints.map((dp) => dp.selected).join());
-                //this.interactivityService.applySelectionStateToData(data.slicerDataPoints);
-                console.info('updateSelection data.slicerDataPoints before', data.slicerDataPoints.map((dp) => dp.selected).join());
+                this.interactivityService.applySelectionStateToData(data.slicerDataPoints);
 
                 let slicerBody: Selection<any> = this.slicerBody.attr('width', this.currentViewport.width),
                     slicerItemContainers: Selection<any> = slicerBody.selectAll(SampleSlicer.ItemContainerSelector.selectorName);
@@ -949,7 +908,7 @@ export class SampleSlicer implements IVisual {
                     interactivityService: this.interactivityService,
                     slicerSettings: data.slicerSettings,
                     behavior:  this.behavior,
-                    dataView: this.dataView,
+                    dataView: <any>this.dataView,
                     category: this.dataView.categorical.categories[0],
                     jsonFilters: this.jsonFilters,
                 };
@@ -973,7 +932,6 @@ export class SampleSlicer implements IVisual {
         let callbacks: SampleSlicerCallbacks = {};
 
         callbacks.applyFilter = (filter: IFilter): void => {
-          console.info('DEBUG INFO: this.visualHost.applyJsonFilter(filter, "general", "filter", FilterAction.merge);\n filter is:', filter);
           this.visualHost.applyJsonFilter(filter, "general", "filter", FilterAction.merge);
         };
 

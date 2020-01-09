@@ -54,7 +54,7 @@ export class ScalableRange {
 
     public setScalingTransformationDomain(transformationDomain: powerbiVisualsApi.ValueRange<number>): void {
         this.scalingTransformationDomain = transformationDomain;
-        this.scalingTransformation = d3ScaleLinear() // TMP ScaleLinear as LinearScale, scaleLinear / d3.scale.linear()
+        this.scalingTransformation = d3ScaleLinear()
             .domain([transformationDomain.min, transformationDomain.max])
             .range([ScalableRange.TRANSFORMATION_RANGE_MIN, ScalableRange.TRANSFORMATION_RANGE_MAX]);
     }

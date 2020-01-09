@@ -41,6 +41,7 @@ import {
   IAdvancedFilterCondition,
   IFilterColumnTarget,
 } from "powerbi-models";
+import { FilterDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityFilterService";
 
 import powerbiVisualsApi from "powerbi-visuals-api";
 import ValueRange = powerbiVisualsApi.ValueRange;
@@ -48,11 +49,13 @@ import ValueRange = powerbiVisualsApi.ValueRange;
 import {
   interactivityBaseService,
   interactivitySelectionService,
+  interactivityFilterService,
 } from "powerbi-visuals-utils-interactivityutils";
 
 import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
 import IInteractivityService = interactivityBaseService.IInteractivityService;
-import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
+// import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
+import IFilterBehaviorOptions = interactivityFilterService.IFilterBehaviorOptions;
 import IBehaviorOptions = interactivityBaseService.IBehaviorOptions;
 import ISelectionHandler = interactivityBaseService.ISelectionHandler;
 
@@ -60,8 +63,8 @@ import { Settings } from "./settings";
 import { ScalableRange } from "./scalableRange";
 import { SampleSlicerDataPoint, SampleSlicerCallbacks } from "./sampleSlicer";
 
-export interface SampleSlicerBehaviorOptions extends IBehaviorOptions<any>{
-    slicerItemContainers: Selection<SelectableDataPoint>;
+export interface SampleSlicerBehaviorOptions extends IFilterBehaviorOptions{ // DEV IBehaviorOptions<any>{
+    slicerItemContainers: Selection<FilterDataPoint>;
     dataPoints: SampleSlicerDataPoint[];
     interactivityService: IInteractivityService<any>;
     slicerSettings: Settings;
@@ -73,7 +76,7 @@ export class SelectionBehavior implements IInteractiveBehavior {
     /* range selection model*/
     public scalableRange: ScalableRange;
 
-    private slicers: Selection<SelectableDataPoint>;
+    private slicers: Selection<FilterDataPoint>;
     private interactivityService: IInteractivityService<any>;
     private slicerSettings: Settings;
     private options: SampleSlicerBehaviorOptions;
@@ -95,7 +98,7 @@ export class SelectionBehavior implements IInteractiveBehavior {
         Implementation of IInteractiveBehavior i/f
     */
     public bindEvents(options: SampleSlicerBehaviorOptions, selectionHandler: ISelectionHandler): void {
-        const slicers: Selection<SelectableDataPoint> = this.slicers = options.slicerItemContainers;
+        const slicers: Selection<FilterDataPoint> = this.slicers = options.slicerItemContainers;
 
         this.dataPoints = options.dataPoints;
         this.interactivityService = options.interactivityService;
@@ -103,14 +106,14 @@ export class SelectionBehavior implements IInteractiveBehavior {
         this.options = options;
 
         this.selectionHandler = selectionHandler;
-
-        slicers.on("click", (dataPoint: SampleSlicerDataPoint, index: number) => {
+        // (this: T, datum: Datum, index: number, groups: T[] | ArrayLike<T>) => Result
+        slicers.on("click", ( dataPoint: SampleSlicerDataPoint, _index: number) => {
             (d3Event as MouseEvent).preventDefault();
             this.clearRangeSelection();
 
             /* update selection state */
             selectionHandler.handleSelection(dataPoint, true /* isMultiSelect */);
-
+            
             /* send selection state to the host*/
             let filterValues = SelectionBehavior.mapDataPointsToFilterValues(this.dataPoints.filter((dataPoint) => dataPoint.selected));
 
@@ -157,7 +160,7 @@ export class SelectionBehavior implements IInteractiveBehavior {
         this.scalableRange = new ScalableRange();
     }
 
-    public styleSlicerInputs(slicers: Selection<any>, hasSelection: boolean) {
+    public styleSlicerInputs(slicers: Selection<any>, _hasSelection: boolean) {
         let settings = this.slicerSettings;
         slicers.each(function (dataPoint: SampleSlicerDataPoint) {
             d3Select(this)
