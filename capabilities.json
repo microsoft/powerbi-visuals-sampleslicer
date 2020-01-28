@@ -42,7 +42,7 @@
           "selfFilter": {
               "type": {
                   "filter": {
-                      "selfFilter": true
+                      "selfFilter": false
                   }
               }
           },

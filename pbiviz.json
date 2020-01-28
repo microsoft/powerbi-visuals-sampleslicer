@@ -3,8 +3,8 @@
     "name": "sampleSlicer",
     "displayName": "SampleSlicer",
     "guid": "SampleSlicer1448559807355TEST3",
-    "visualClassName": "SampleSlicer",
-    "version": "2.0.3",
+    "visualClassName": "SampleSlicer 2.0.4",
+    "version": "2.0.4",
     "description": "Use this slicer to select discrete numeric categories or range of numeric category values.",
     "supportUrl": "http://community.powerbi.com",
     "gitHubUrl": "https://github.com/Microsoft/powerbi-visuals-sampleslicer"

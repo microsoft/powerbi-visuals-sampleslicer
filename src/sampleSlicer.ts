@@ -406,12 +406,6 @@ export class SampleSlicer implements IVisual {
         else {
             this.currentViewport = options.viewport;
         }
-        console.warn("UPDATE");
-        console.info("options:", options,
-            "\n this.dataView", this.dataView,
-            "\n currentViewport", this.currentViewport,
-            "\n waitingForData", this.waitingForData);
-
 
         this.updateInternal(categoryIdentityChanged);
         this.eventService.renderingFinished(options);
