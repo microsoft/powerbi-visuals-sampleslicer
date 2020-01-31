@@ -122,7 +122,7 @@ export interface SampleSlicerData {
 
 export interface SampleSlicerDataPoint extends FilterDataPoint {// DEV SelectableDataPoint {
     identity?:  any; // DEV
-    category: string;
+    category: string | number;
     isSelectedRangePoint?: boolean;
     filtered?: boolean;
 }
@@ -254,7 +254,7 @@ export class SampleSlicer implements IVisual {
 
         if (searchText) {
             searchText = searchText.toLowerCase();
-            converter.dataPoints.forEach(x => x.filtered = x.category.toLowerCase().indexOf(searchText) !== 0);
+            converter.dataPoints.forEach(x => x.filtered = x.category.toString().toLowerCase().indexOf(searchText) !== 0); // TMP toString
         }
 
         const categories: DataViewCategoricalColumn = dataView.categorical.categories[0];
@@ -474,7 +474,7 @@ export class SampleSlicer implements IVisual {
             this.visualHost,
             this.jsonFilters
         );
-
+    
         if (!data) {
             this.tableView.empty();
             return;

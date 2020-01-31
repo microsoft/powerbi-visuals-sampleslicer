@@ -85,7 +85,7 @@ export class SampleSlicerConverter {
 
                 this.dataPoints.push({
                     identity: categorySelectionId as ISelectionId,
-                    category: categoryValue.toString(),
+                    category: categoryValue,
                     selected: selected,
                     filtered: false,
                     isSelectedRangePoint: scalableRange.isActive() && SampleSlicerConverter.isNumberWithinRange(categoryValue, scalableRange.getValue())

@@ -83,10 +83,11 @@ export class SelectionBehavior implements IInteractiveBehavior {
     private dataPoints: SampleSlicerDataPoint[];
     private callbacks: SampleSlicerCallbacks;
 
-    private static mapDataPointsToFilterValues (dataPoints: SampleSlicerDataPoint[]): string[] {
+    private static mapDataPointsToFilterValues (dataPoints: SampleSlicerDataPoint[]): any[] {
         return (dataPoints
             .map( (dataPoint: SampleSlicerDataPoint) => (dataPoint.category || null) ) || [])
-            .filter( (value: string | null ) => (typeof value === 'string') );
+            .filter( (value: string | number | null ) => (typeof value === 'string' || typeof value === 'number') )
+            //.map( (value: string | number  | null) => ((!isNaN(Number(value)) ? Number(value) : value ) ) );
     }
 
     constructor(callbacks: SampleSlicerCallbacks) {
@@ -127,9 +128,9 @@ export class SelectionBehavior implements IInteractiveBehavior {
                         this.callbacks.getFilterColumnTarget(), 
                         "In",
                         filterValues 
-                        
                     ))
                 };
+                
                 this.callbacks.applyFilter(filter);
             }
         });
