@@ -24,7 +24,7 @@
  *  THE SOFTWARE.
  */
 
-// "use strict";
+"use strict";
 import "../style/sampleSlicer.less";
 import isEqual from "lodash.isequal";
 import * as noUiSlider from "nouislider";
@@ -120,8 +120,8 @@ export interface SampleSlicerData {
     slicerSettings: Settings;
 }
 
-export interface SampleSlicerDataPoint extends FilterDataPoint {// DEV SelectableDataPoint {
-    identity?:  any; // DEV
+export interface SampleSlicerDataPoint extends FilterDataPoint {
+    identity?:  any;
     category: string | number;
     isSelectedRangePoint?: boolean;
     filtered?: boolean;
@@ -140,7 +140,7 @@ export class SampleSlicer implements IVisual {
     private dataView: DataView;
     private slicerData: SampleSlicerData;
 
-    private interactivityService: any; //InteractivityFilterService; // DEV IInteractivityService<any>;
+    private interactivityService: any;
     private selectionManager: ISelectionManager;
     private eventService: IVisualEventService;
 
@@ -159,7 +159,7 @@ export class SampleSlicer implements IVisual {
     private startInput: HTMLInputElement;
     private endInput: HTMLInputElement;
 
-    //
+    // External classes
     private slider: noUiSlider.noUiSlider;
     private tableView: ITableView;
     private behavior: SelectionBehavior;
@@ -175,9 +175,9 @@ export class SampleSlicer implements IVisual {
     private startControl: Selection<any>;
     private endControl: Selection<any>;
 
-    //state
+    // State
     private waitingForData: boolean;
-    private updateFilter: boolean; // DEV
+    private updateFilter: boolean;
 
     // Constants
     public static DefaultFontFamily: string = "helvetica, arial, sans-serif";
@@ -254,7 +254,7 @@ export class SampleSlicer implements IVisual {
 
         if (searchText) {
             searchText = searchText.toLowerCase();
-            converter.dataPoints.forEach(x => x.filtered = x.category.toString().toLowerCase().indexOf(searchText) !== 0); // TMP toString
+            converter.dataPoints.forEach(x => x.filtered = x.category.toString().toLowerCase().indexOf(searchText) !== 0);
         }
 
         const categories: DataViewCategoricalColumn = dataView.categorical.categories[0];
@@ -346,10 +346,6 @@ export class SampleSlicer implements IVisual {
         return true;
     }
 
-    /*
-     *  Public
-     */
-
     constructor(options: VisualConstructorOptions) {
         if (window.location !== window.parent.location) {
           require("core-js/stable");
@@ -411,10 +407,6 @@ export class SampleSlicer implements IVisual {
         this.eventService.renderingFinished(options);
     }
 
-    /*
-     *  Private
-     */
-
     private initContainer() {
         const settings: Settings = this.settings,
             slicerBodyViewport: IViewport = SampleSlicer.getSlicerBodyViewport(this.currentViewport);
@@ -445,7 +437,7 @@ export class SampleSlicer implements IVisual {
         this.root.appendChild(outerContainer)
 
 
-        // this.initClearButton(outerContainer); //Temporary unavailable
+        // this.initClearButton(outerContainer); // Temporary unavailable 
         this.initHeader(outerContainer);
         this.initRangeSlicer(outerContainer);
 
@@ -688,7 +680,7 @@ export class SampleSlicer implements IVisual {
         // populate slider event handlers
         this.slider.on(
           "change",
-          (data: any[], index: number, values: any) => { //HANDLER
+          (data: any[], index: number, values: any) => {
               this.behavior.scalableRange.setScaledValue({ min: values[0], max: values[1] });
               this.behavior.updateOnRangeSelectonChange();
               this.updateInternal(false);
@@ -708,7 +700,7 @@ export class SampleSlicer implements IVisual {
 
         this.searchInput = <HTMLInputElement>SampleSlicer.createElement(`<input type="text" drag-resize-disabled class="searchInput"/>`);
 
-        const searchEventlinstener = () => { //HANDLER
+        const searchEventlinstener = () => {
           this.visualHost.persistProperties(<VisualObjectInstancesToPersist>{
               merge: [{
                   objectName: "general",
@@ -943,7 +935,7 @@ export class SampleSlicer implements IVisual {
                     jsonFilters: this.jsonFilters,
                 };
 
-                this.interactivityService.bind(behaviorOptions); //data.slicerDataPoints, this.behavior, behaviorOptions, {      });
+                this.interactivityService.bind(behaviorOptions);
 
                 this.behavior.styleSlicerInputs(
                     rowSelection.select(SampleSlicer.ItemContainerSelector.selectorName),
@@ -966,8 +958,7 @@ export class SampleSlicer implements IVisual {
         };
 
         callbacks.getFilterColumnTarget = (): IFilterColumnTarget => {
-            const target = interactivityFilterService.extractFilterColumnTarget(this.dataView.metadata.columns[0]);
-            return target;
+            return interactivityFilterService.extractFilterColumnTarget(this.dataView.metadata.columns[0]);
         };
 
         callbacks.getPersistedSelectionState = (): ISelectionId[] => {

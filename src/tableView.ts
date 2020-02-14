@@ -312,54 +312,53 @@ export class TableView implements ITableView {
             rowSelection: Selection<any>,
             cellSelection: Selection<any>;
         
-        let i = 0;
-        for (i = 0;  i<6; i++) { // UPDATE FIX
-        rowSelection = visibleGroupContainer
-            .selectAll(TableView.RowSelector.selectorName)
-            .data(<SampleSlicerDataPoint[][]>groupedData.data);
+        for (let i = 0; i < 1; i++) { // UPDATE D3 FIX
+            rowSelection = visibleGroupContainer
+                .selectAll(TableView.RowSelector.selectorName)
+                .data(<SampleSlicerDataPoint[][]>groupedData.data);
 
-        rowSelection
-            .enter()
-            .append("div")
-            .classed(TableView.RowSelector.className, true);
+            rowSelection
+                .enter()
+                .append("div")
+                .classed(TableView.RowSelector.className, true);
 
-        cellSelection = rowSelection
-            .selectAll(TableView.CellSelector.selectorName)
-            .data((dataPoints: SampleSlicerDataPoint[]) => {
-                return dataPoints;
+            cellSelection = rowSelection
+                .selectAll(TableView.CellSelector.selectorName)
+                .data((dataPoints: SampleSlicerDataPoint[]) => {
+                    return dataPoints;
+                });
+
+            cellSelection.call((selection: Selection<any>) => {
+                options.onEnter(selection);
             });
 
-        cellSelection.call((selection: Selection<any>) => {
-            options.onEnter(selection);
-        });
+            cellSelection.call((selection: Selection<any>) => {
+                options.onUpdate(selection);
+            });
+        
+            cellSelection
+                .enter()
+                .append('div')
+                .classed(TableView.CellSelector.className, true);
 
-        cellSelection.call((selection: Selection<any>) => {
-            options.onUpdate(selection);
-        });
-       
-        cellSelection
-            .enter()
-            .append('div')
-            .classed(TableView.CellSelector.className, true);
+            cellSelection
+                .style('height', (rowHeight > 0) ? `${rowHeight}px` : 'auto');
 
-        cellSelection
-            .style('height', (rowHeight > 0) ? `${rowHeight}px` : 'auto');
+            cellSelection
+                .style('width', (options.columnWidth > 0)
+                    ? `${options.columnWidth}px`
+                    : `${100 / groupedData.totalColumns}%`);
 
-        cellSelection
-            .style('width', (options.columnWidth > 0)
-                ? `${options.columnWidth}px`
-                : `${100 / groupedData.totalColumns}%`);
+            rowSelection.style('width', null);
 
-        rowSelection.style('width', null);
+            cellSelection
+                .exit()
+                .remove();
 
-        cellSelection
-            .exit()
-            .remove();
-
-        rowSelection
-            .exit()
-            .call(d => options.onExit(d))
-            .remove();
-        }
+            rowSelection
+                .exit()
+                .call(d => options.onExit(d))
+                .remove();
+            }
     }
 }

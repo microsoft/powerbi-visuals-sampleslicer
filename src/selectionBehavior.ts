@@ -54,7 +54,6 @@ import {
 
 import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
 import IInteractivityService = interactivityBaseService.IInteractivityService;
-// import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
 import IFilterBehaviorOptions = interactivityFilterService.IFilterBehaviorOptions;
 import IBehaviorOptions = interactivityBaseService.IBehaviorOptions;
 import ISelectionHandler = interactivityBaseService.ISelectionHandler;
@@ -63,7 +62,7 @@ import { Settings } from "./settings";
 import { ScalableRange } from "./scalableRange";
 import { SampleSlicerDataPoint, SampleSlicerCallbacks } from "./sampleSlicer";
 
-export interface SampleSlicerBehaviorOptions extends IFilterBehaviorOptions{ // DEV IBehaviorOptions<any>{
+export interface SampleSlicerBehaviorOptions extends IFilterBehaviorOptions{ 
     slicerItemContainers: Selection<FilterDataPoint>;
     dataPoints: SampleSlicerDataPoint[];
     interactivityService: IInteractivityService<any>;
@@ -87,7 +86,6 @@ export class SelectionBehavior implements IInteractiveBehavior {
         return (dataPoints
             .map( (dataPoint: SampleSlicerDataPoint) => (dataPoint.category || null) ) || [])
             .filter( (value: string | number | null ) => (typeof value === 'string' || typeof value === 'number') )
-            //.map( (value: string | number  | null) => ((!isNaN(Number(value)) ? Number(value) : value ) ) );
     }
 
     constructor(callbacks: SampleSlicerCallbacks) {
@@ -107,7 +105,6 @@ export class SelectionBehavior implements IInteractiveBehavior {
         this.options = options;
 
         this.selectionHandler = selectionHandler;
-        // (this: T, datum: Datum, index: number, groups: T[] | ArrayLike<T>) => Result
         slicers.on("click", ( dataPoint: SampleSlicerDataPoint, _index: number) => {
             (d3Event as MouseEvent).preventDefault();
             this.clearRangeSelection();
