@@ -27,7 +27,6 @@
 // d3
 import { Selection as D3Selection } from "d3";
 type Selection<T> = D3Selection<any, T, any, any>;
-// import UpdateSelection = d3.selection.Update;
 
 
 import powerbiVisualsApi from "powerbi-visuals-api";
@@ -311,16 +310,23 @@ export class TableView implements ITableView {
             groupedData: TableViewGroupedData = this.getGroupedData(),
             rowSelection: Selection<any>,
             cellSelection: Selection<any>;
-        
-        for (let i = 0; i < 1; i++) { // UPDATE D3 FIX
+
             rowSelection = visibleGroupContainer
                 .selectAll(TableView.RowSelector.selectorName)
                 .data(<SampleSlicerDataPoint[][]>groupedData.data);
 
             rowSelection
+                .exit()
+                .call(d => options.onExit(d))
+                .remove();
+            
+            let rowSelectionEnter = rowSelection
                 .enter()
                 .append("div")
-                .classed(TableView.RowSelector.className, true);
+                .classed(TableView.RowSelector.className, true)
+                .style('width', null);
+
+            rowSelection = rowSelection.merge(rowSelectionEnter);
 
             cellSelection = rowSelection
                 .selectAll(TableView.CellSelector.selectorName)
@@ -328,37 +334,29 @@ export class TableView implements ITableView {
                     return dataPoints;
                 });
 
-            cellSelection.call((selection: Selection<any>) => {
-                options.onEnter(selection);
-            });
+            cellSelection.exit().remove();
 
-            cellSelection.call((selection: Selection<any>) => {
-                options.onUpdate(selection);
-            });
-        
-            cellSelection
+            let cellSelectionEnter = 
+                cellSelection
                 .enter()
                 .append('div')
-                .classed(TableView.CellSelector.className, true);
-
-            cellSelection
-                .style('height', (rowHeight > 0) ? `${rowHeight}px` : 'auto');
-
-            cellSelection
+                .classed(TableView.CellSelector.className, true)
+                .style('height', (rowHeight > 0) ? `${rowHeight}px` : 'auto')
                 .style('width', (options.columnWidth > 0)
                     ? `${options.columnWidth}px`
-                    : `${100 / groupedData.totalColumns}%`);
-
-            rowSelection.style('width', null);
-
+                    : `${100 / groupedData.totalColumns}%`)
+            
+            cellSelection = cellSelection.merge(cellSelectionEnter)
+            
+            
             cellSelection
-                .exit()
-                .remove();
-
-            rowSelection
-                .exit()
-                .call(d => options.onExit(d))
-                .remove();
-            }
+                .call((selection: Selection<any>) => {
+                    options.onEnter(selection);
+                });
+            
+            cellSelection
+                .call((selection: Selection<any>) => {
+                    options.onUpdate(selection);
+                });
     }
 }

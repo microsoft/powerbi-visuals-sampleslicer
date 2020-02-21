@@ -347,9 +347,6 @@ export class SampleSlicer implements IVisual {
     }
 
     constructor(options: VisualConstructorOptions) {
-        if (window.location !== window.parent.location) {
-          require("core-js/stable");
-        }
 
         this.root = options.element;
         this.visualHost = options.host;
@@ -372,18 +369,17 @@ export class SampleSlicer implements IVisual {
             !options.viewport) {
             return;
         }
-
         this.eventService.renderingStarted(options);
-
+        
         this.jsonFilters = options.jsonFilters;
         this.restoreRangeFilter(options.dataViews[0]);
-
+        
         // create viewport if not yet created
         if (!this.currentViewport) {
-          this.currentViewport = options.viewport;
-          this.initContainer();
+            this.currentViewport = options.viewport;
+            this.initContainer();
         }
-
+        
         // update dataview
         const existingDataView = this.dataView;
         this.dataView = options.dataViews[0];
@@ -393,7 +389,7 @@ export class SampleSlicer implements IVisual {
         if (existingDataView) {
           categoryIdentityChanged = !SampleSlicer.hasSameCategoryIdentity(existingDataView, this.dataView);
         }
-        
+
         // update viewport
         if (options.viewport.height === this.currentViewport.height
             && options.viewport.width === this.currentViewport.width) {
@@ -416,19 +412,19 @@ export class SampleSlicer implements IVisual {
           event.stopPropagation()
         });
 
-        this.root.addEventListener('contextmenu', (event) => {
-            const emptySelection = {
-                "measures": [],
-                "dataMap": {
-                }
-            };
+        // this.root.addEventListener('contextmenu', (event) => {
+        //     const emptySelection = {
+        //         "measures": [],
+        //         "dataMap": {
+        //         }
+        //     };
             
-            this.selectionManager.showContextMenu(emptySelection, {
-                x: event.clientX,
-                y: event.clientY
-            });
-            event.preventDefault();
-        });
+        //     this.selectionManager.showContextMenu(emptySelection, {
+        //         x: event.clientX,
+        //         y: event.clientY
+        //     });
+        //     event.preventDefault();
+        // });
 
         this.root.addEventListener("keydown", (event: KeyboardEvent) =>{
             event.stopPropagation()
@@ -466,7 +462,7 @@ export class SampleSlicer implements IVisual {
             this.visualHost,
             this.jsonFilters
         );
-    
+
         if (!data) {
             this.tableView.empty();
             return;
@@ -794,62 +790,72 @@ export class SampleSlicer implements IVisual {
         }
     }
 
-    private enterSelection(rowSelection: Selection<any>): void {
+    private enterSelection(cellSelection: Selection<any>): void {
         let settings: Settings = this.settings;
-
-        let ulItemElement: Selection<any> = rowSelection
+        
+        let ulItemElement: Selection<any> = cellSelection
             .selectAll('ul')
             .data((dataPoint: SampleSlicerDataPoint) => {
                 return [dataPoint];
             });
 
-        ulItemElement
-            .enter()
-            .append('ul');
-
-        ulItemElement
+        ulItemElement 
             .exit()
             .remove();
+
+        let ulItemElementEnter = ulItemElement
+            .enter()
+            .append('ul');
+        
+        ulItemElement = ulItemElement.merge(ulItemElementEnter)
 
         let listItemElement: Selection<any> = ulItemElement
             .selectAll(SampleSlicer.ItemContainerSelector.selectorName)
             .data((dataPoint: SampleSlicerDataPoint) => {
                 return [dataPoint];
             });
+        
+        listItemElement.exit().remove();
 
-        listItemElement
+        let listItemElementEnter = listItemElement
             .enter()
-            .append('li')
-            .classed(SampleSlicer.ItemContainerSelector.className, true);
-
+            .append('li');
+        
+        listItemElement = listItemElement.merge(listItemElementEnter);
+        
         listItemElement
+            .classed(SampleSlicer.ItemContainerSelector.className, true)
             .style('margin-left', PixelConverter.toString(settings.slicerItemContainer.marginLeft));
+        
+        // let slicerImgWrapperSelection: Selection<any> = listItemElement
+        //     .selectAll(SampleSlicer.SlicerImgWrapperSelector.className)
+        //     .data((dataPoint: SampleSlicerDataPoint) => {
+        //         return [dataPoint];
+        //     });
 
-        let slicerImgWrapperSelection: Selection<any> = listItemElement
-            .selectAll(SampleSlicer.SlicerImgWrapperSelector.className)
-            .data((dataPoint: SampleSlicerDataPoint) => {
-                return [dataPoint];
-            });
+        // slicerImgWrapperSelection
+        //     .enter()
+        //     .append('img')
+        //     .classed(SampleSlicer.SlicerImgWrapperSelector.className, true);
 
-        slicerImgWrapperSelection
-            .enter()
-            .append('img')
-            .classed(SampleSlicer.SlicerImgWrapperSelector.className, true);
-
-        slicerImgWrapperSelection
-            .exit()
-            .remove();
+        // slicerImgWrapperSelection
+        //     .exit()
+        //     .remove();
 
         let slicerTextWrapperSelection: Selection<any> = listItemElement
             .selectAll(SampleSlicer.SlicerTextWrapperSelector.selectorName)
             .data((dataPoint: SampleSlicerDataPoint) => {
                 return [dataPoint];
             });
+        
+        slicerTextWrapperSelection.exit().remove();
 
-        slicerTextWrapperSelection
+        let slicerTextWrapperSelectionEnter = slicerTextWrapperSelection
             .enter()
             .append('div')
             .classed(SampleSlicer.SlicerTextWrapperSelector.className, true);
+        
+        slicerTextWrapperSelection = slicerTextWrapperSelection.merge(slicerTextWrapperSelectionEnter);
 
         let labelTextSelection: Selection<any> = slicerTextWrapperSelection
             .selectAll(SampleSlicer.LabelTextSelector.selectorName)
@@ -857,28 +863,21 @@ export class SampleSlicer implements IVisual {
                 return [dataPoint];
             });
 
-        labelTextSelection
+        labelTextSelection.exit().remove();
+        
+        let labelTextSelectionEnter = labelTextSelection
             .enter()
             .append('span')
             .classed(SampleSlicer.LabelTextSelector.className, true);
+        
+        labelTextSelection = labelTextSelection.merge(labelTextSelectionEnter);
 
         labelTextSelection
           .style('font-size', PixelConverter.fromPoint(settings.slicerText.textSize));
 
-        labelTextSelection
-            .exit()
-            .remove();
-
-        slicerTextWrapperSelection
-            .exit()
-            .remove();
-
-        listItemElement
-            .exit()
-            .remove();
     }
 
-    private updateSelection(rowSelection: Selection<any>): void {
+    private updateSelection(cellSelection: Selection<any>): void {
         let settings: Settings = this.settings,
             data: SampleSlicerData = this.slicerData;
 
@@ -886,7 +885,7 @@ export class SampleSlicer implements IVisual {
             //update of rangeSlicer
             this.updateHeader();
 
-            const slicerText: Selection<any> = rowSelection.selectAll(SampleSlicer.LabelTextSelector.selectorName),
+            const slicerText: Selection<any> = cellSelection.selectAll(SampleSlicer.LabelTextSelector.selectorName),
                 textProperties: TextProperties = SampleSlicer.getSampleTextProperties(settings.slicerText.textSize),
                 formatString: string = data.formatString;
 
@@ -912,10 +911,10 @@ export class SampleSlicer implements IVisual {
                 }
             });
 
-            rowSelection
+            cellSelection
                 .style('padding', PixelConverter.toString(settings.slicerText.padding));
 
-            rowSelection.selectAll(SampleSlicer.ItemContainerSelector.selectorName)
+            cellSelection.selectAll(SampleSlicer.ItemContainerSelector.selectorName)
                 .style('font-size', PixelConverter.fromPoint(settings.slicerText.textSize));
 
             if (this.interactivityService && this.slicerBody) {
@@ -938,11 +937,11 @@ export class SampleSlicer implements IVisual {
                 this.interactivityService.bind(behaviorOptions);
 
                 this.behavior.styleSlicerInputs(
-                    rowSelection.select(SampleSlicer.ItemContainerSelector.selectorName),
+                    cellSelection.select(SampleSlicer.ItemContainerSelector.selectorName),
                     this.interactivityService.hasSelection());
             }
             else {
-                this.behavior.styleSlicerInputs(rowSelection.select(SampleSlicer.ItemContainerSelector.selectorName), false);
+                this.behavior.styleSlicerInputs(cellSelection.select(SampleSlicer.ItemContainerSelector.selectorName), false);
             }
         }
     }
