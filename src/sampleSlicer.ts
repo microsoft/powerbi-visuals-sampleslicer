@@ -266,10 +266,6 @@ export class SampleSlicer implements IVisual {
         };
     }
 
-    /*
-    * Static helpers
-    */
-
     public static formatValue(value: number): string {
         return value != null ? valueFormatter.format(String(value), "#") : '';
     }
@@ -412,19 +408,19 @@ export class SampleSlicer implements IVisual {
           event.stopPropagation()
         });
 
-        // this.root.addEventListener('contextmenu', (event) => {
-        //     const emptySelection = {
-        //         "measures": [],
-        //         "dataMap": {
-        //         }
-        //     };
+        this.root.addEventListener('contextmenu', (event) => {
+            const emptySelection = {
+                "measures": [],
+                "dataMap": {
+                }
+            };
             
-        //     this.selectionManager.showContextMenu(emptySelection, {
-        //         x: event.clientX,
-        //         y: event.clientY
-        //     });
-        //     event.preventDefault();
-        // });
+            this.selectionManager.showContextMenu(emptySelection, {
+                x: event.clientX,
+                y: event.clientY
+            });
+            event.preventDefault();
+        });
 
         this.root.addEventListener("keydown", (event: KeyboardEvent) =>{
             event.stopPropagation()
@@ -479,10 +475,6 @@ export class SampleSlicer implements IVisual {
 
         this.updateRangeSlicer();
     }
-
-    /* 
-     * Visual parts initialization and update
-     */
 
     private initHeader(parent: HTMLElement): void {
       const headerText = this.settings.headerText;
@@ -747,10 +739,6 @@ export class SampleSlicer implements IVisual {
         }
     }
 
-    /*
-     *  Handlers
-     */ 
-
     private onRangeInputTextboxChange(
         inputString: string,
         rangeValueType: RangeValueType,
@@ -826,21 +814,6 @@ export class SampleSlicer implements IVisual {
         listItemElement
             .classed(SampleSlicer.ItemContainerSelector.className, true)
             .style('margin-left', PixelConverter.toString(settings.slicerItemContainer.marginLeft));
-        
-        // let slicerImgWrapperSelection: Selection<any> = listItemElement
-        //     .selectAll(SampleSlicer.SlicerImgWrapperSelector.className)
-        //     .data((dataPoint: SampleSlicerDataPoint) => {
-        //         return [dataPoint];
-        //     });
-
-        // slicerImgWrapperSelection
-        //     .enter()
-        //     .append('img')
-        //     .classed(SampleSlicer.SlicerImgWrapperSelector.className, true);
-
-        // slicerImgWrapperSelection
-        //     .exit()
-        //     .remove();
 
         let slicerTextWrapperSelection: Selection<any> = listItemElement
             .selectAll(SampleSlicer.SlicerTextWrapperSelector.selectorName)
@@ -946,9 +919,6 @@ export class SampleSlicer implements IVisual {
         }
     }
 
-    /**
-     *  Callbacks consumed by the SelectionBehavior class
-     * */
     private getCallbacks(): SampleSlicerCallbacks {
         let callbacks: SampleSlicerCallbacks = {};
 
