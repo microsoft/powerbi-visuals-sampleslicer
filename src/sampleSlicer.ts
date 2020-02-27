@@ -285,9 +285,9 @@ export class SampleSlicer implements IVisual {
     }
 
     private static createElement(htmlString: string): HTMLElement {
-        const parser = new DOMParser();
-        const html = parser.parseFromString(htmlString, 'text/html');
-        return <HTMLElement>html.body.firstChild;
+        const tmpParent = document.createElement('div');
+        tmpParent.innerHTML = htmlString;
+        return <HTMLElement> tmpParent.firstChild;
     }
 
     private static appendInputElement(parent: HTMLElement): HTMLInputElement {
@@ -343,6 +343,9 @@ export class SampleSlicer implements IVisual {
     }
 
     constructor(options: VisualConstructorOptions) {
+        if (window.location !== window.parent.location) {
+            require("core-js/stable");
+        }
 
         this.root = options.element;
         this.visualHost = options.host;
@@ -451,13 +454,16 @@ export class SampleSlicer implements IVisual {
 
     private updateInternal(categoryIdentityChanged: boolean): void {
         // convert data to internal representation
-        let data = SampleSlicer.converter(
-            this.dataView,
-            (<HTMLInputElement>this.searchInput).value,
-            this.behavior.scalableRange,
-            this.visualHost,
-            this.jsonFilters
-        );
+        let searchInputValue = (<HTMLInputElement>this.searchInput) 
+                ? (<HTMLInputElement>this.searchInput).value
+                : "",
+            data = SampleSlicer.converter(
+                this.dataView,
+                searchInputValue,
+                this.behavior.scalableRange,
+                this.visualHost,
+                this.jsonFilters
+            );
 
         if (!data) {
             this.tableView.empty();
@@ -468,8 +474,9 @@ export class SampleSlicer implements IVisual {
        
         this.settings = this.slicerData.slicerSettings;
         
-        this.slicerBody
-            .style('height', `${this.currentViewport.height - 120}px`);
+        if (this.slicerBody) {
+            this.slicerBody.style('height', `${this.currentViewport.height - 120}px`);
+        }
 
         this.updateTableView(categoryIdentityChanged);
 
@@ -546,11 +553,15 @@ export class SampleSlicer implements IVisual {
     }
 
     private updateTableView(resetScrollbarPosition: boolean): void {
+        if (!this.tableView || !this.slicerData || !this.settings) {
+            return;
+        }
+
         let slicerDataPoints: SampleSlicerDataPoint[] = this.slicerData.slicerDataPoints,
             slicerText = this.settings.slicerText,
             rows = this.settings.general.rows,
             columns = this.settings.general.columns;
-
+        
         this.tableView
             .rowHeight(slicerText.height)
             .columnWidth(slicerText.width)
@@ -632,17 +643,21 @@ export class SampleSlicer implements IVisual {
 
     private updateRangeSlicer(): void {
         if (!this.slider) {
-            const sliderContainer: HTMLElement = this.rangeSlicerSlider.nodes()[0];
-            this.initNoUISlider(sliderContainer);
+            
+            const sliderContainer: HTMLElement = (!!this.rangeSlicerSlider) && this.rangeSlicerSlider.nodes()[0];
+            if (sliderContainer) {
+                this.initNoUISlider(sliderContainer);
+            }
         } else {
             // get the scaled range value
             // and use it to set the slider
             let scaledValue = this.behavior.scalableRange.getScaledValue();
             this.slider.set([scaledValue.min, scaledValue.max]);
         }
-
-        this.startInput.value =  SampleSlicer.formatValue(this.behavior.scalableRange.getValue().min);
-        this.endInput.value =  SampleSlicer.formatValue(this.behavior.scalableRange.getValue().max);
+        if( this.startInput && this.endInput){
+            this.startInput.value =  SampleSlicer.formatValue(this.behavior.scalableRange.getValue().min);
+            this.endInput.value =  SampleSlicer.formatValue(this.behavior.scalableRange.getValue().max);
+        }
     }
 
     private initNoUISlider(parent: HTMLElement) {
