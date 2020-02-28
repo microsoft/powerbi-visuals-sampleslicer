@@ -561,7 +561,7 @@ export class SampleSlicer implements IVisual {
             slicerText = this.settings.slicerText,
             rows = this.settings.general.rows,
             columns = this.settings.general.columns;
-        
+
         this.tableView
             .rowHeight(slicerText.height)
             .columnWidth(slicerText.width)
