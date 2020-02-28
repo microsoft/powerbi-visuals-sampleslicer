@@ -59,6 +59,10 @@
       }
     }
   },
-  "suppressDefaultTitle": true,
-  "supportsSynchronizingFilterState": true
+  "supportsHighlight": true,	
+  "suppressDefaultTitle": true,	
+  "supportsSynchronizingFilterState": true,	
+  "sorting": {	
+      "default": {}	
+  }
 }
