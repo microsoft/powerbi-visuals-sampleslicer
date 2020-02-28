@@ -24,840 +24,935 @@
  *  THE SOFTWARE.
  */
 
-module powerbi.extensibility.visual {
-    // d3
-    import Selection = d3.Selection;
-    import UpdateSelection = d3.selection.Update;
+"use strict";
+import "../style/sampleSlicer.less";
+import isEqual from "lodash.isequal";
+import * as noUiSlider from "nouislider";
 
-    // powerbi.extensibility.utils.dataview
-    import DataViewObjectsModule = powerbi.extensibility.utils.dataview.DataViewObjects;
+// d3
+import {
+    select as d3Select,
+    Selection as D3Selection,
+} from "d3";
 
-    // powerbi.extensibility.utils.type
-    import PixelConverter = powerbi.extensibility.utils.type.PixelConverter;
+type Selection<T> = D3Selection<any, T, any, any>;
 
-    // powerbi.extensibility.utils.interactivity
-    import SelectableDataPoint = powerbi.extensibility.utils.interactivity.SelectableDataPoint;
-    import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
-    import createInteractivityService = powerbi.extensibility.utils.interactivity.createInteractivityService;
-    import ISelectionHandler = powerbi.extensibility.utils.interactivity.ISelectionHandler;
+// powerbi
+import {
+  IFilter,
+  IFilterColumnTarget,
+  IAdvancedFilter,
+  Filter,
+  PrimitiveValueType,
+} from "powerbi-models";
 
-    // powerbi.extensibility.utils.svg
-    import IMargin = powerbi.extensibility.utils.svg.IMargin;
-    import ClassAndSelector = powerbi.extensibility.utils.svg.CssConstants.ClassAndSelector;
-    import createClassAndSelector = powerbi.extensibility.utils.svg.CssConstants.createClassAndSelector;
+import powerbiVisualsApi from "powerbi-visuals-api";
+import DataView = powerbiVisualsApi.DataView;
+import IViewport = powerbiVisualsApi.IViewport;
+import ValueRange = powerbiVisualsApi.ValueRange;
+import FilterAction = powerbiVisualsApi.FilterAction;
 
-    // powerbi.extensibility.utils.formatting
-    import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
-    import TextProperties = powerbi.extensibility.utils.formatting.TextProperties;
-    import textMeasurementService = powerbi.extensibility.utils.formatting.textMeasurementService;
+import DataViewCategoryColumn = powerbiVisualsApi.DataViewCategoryColumn;
+import DataViewCategoricalColumn = powerbiVisualsApi.DataViewCategoricalColumn;
 
-    import FilterManager = powerbi.extensibility.utils.filter.FilterManager;
-    import AppliedFilter = powerbi.extensibility.utils.filter.AppliedFilter;
+import VisualObjectInstanceEnumeration = powerbiVisualsApi.VisualObjectInstanceEnumeration;
+import EnumerateVisualObjectInstancesOptions = powerbiVisualsApi.EnumerateVisualObjectInstancesOptions;
+import VisualObjectInstancesToPersist = powerbiVisualsApi.VisualObjectInstancesToPersist;
 
-    export const enum RangeValueType {
-        Start,
-        End
-    }
+import DataViewObjectPropertyIdentifier = powerbiVisualsApi.DataViewObjectPropertyIdentifier;
+import IVisualEventService = powerbiVisualsApi.extensibility.IVisualEventService;
 
-    export interface SampleSlicerData {
-        categorySourceName: string;
-        formatString: string;
-        slicerDataPoints: SampleSlicerDataPoint[];
-        slicerSettings: Settings;
-    }
+import IVisual = powerbiVisualsApi.extensibility.visual.IVisual;
+import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
+import ISelectionManager = powerbiVisualsApi.extensibility.ISelectionManager;
+import VisualUpdateOptions = powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
+import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
 
-    export interface SampleSlicerDataPoint extends SelectableDataPoint {
-        category?: string;
-        isSelectedRangePoint?: boolean;
-        filtered?: boolean;
-    }
+import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 
-    export interface SampleSlicerCallbacks {
-        getPersistedSelectionState?: () => powerbi.extensibility.ISelectionId[];
-        restorePersistedRangeSelectionState?: () => void;
-        applyAdvancedFilter?: (filter: IAdvancedFilter) => void;
-        getAdvancedFilterColumnTarget?: () => IFilterColumnTarget;
-    }
+// powerbi-visuals-utils-dataviewutils
+import { dataViewObjects as DataViewObjectsModule } from "powerbi-visuals-utils-dataviewutils";
 
-    export class SampleSlicer implements IVisual {
-        private $root: JQuery;
-        private $searchHeader: JQuery;
-        private $searchInput: JQuery;
-        private currentViewport: IViewport;
-        private dataView: DataView;
-        private slicerHeader: Selection<any>;
+// powerbi-visuals-utils-typeutils
+import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutils";
+
+// powerbi-visuals-utils-interactivityutils
+import {
+    interactivityBaseService,
+    interactivitySelectionService,
+    interactivityFilterService,
+} from "powerbi-visuals-utils-interactivityutils";
 
 
-        private rangeSlicer: Selection<any>;
-        private rangeSlicerHead: Selection<any>;
-        private rangeSlicerControls: Selection<any>;
-        private rangeSlicerSlider: Selection<any>;
-        private startControl: Selection<any>;
-        private endControl: Selection<any>;
+import createInteractivityFilterService = interactivityFilterService.createInteractivityFilterService;
+import InteractivityFilterService = interactivityFilterService.InteractivityFilterService;
+import IInteractivityService = interactivityBaseService.IInteractivityService;
+import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
 
+// powerbi-visuals-utils-svgutils
+import * as SVGUtil from "powerbi-visuals-utils-svgutils";
+import IMargin = SVGUtil.IMargin;
+import ClassAndSelector = SVGUtil.CssConstants.ClassAndSelector;
+import createClassAndSelector = SVGUtil.CssConstants.createClassAndSelector;
 
-        private slicerBody: Selection<any>;
-        private rangeBody: Selection<any>;
-        private startContainer: Selection<any>;
-        private endContainer: Selection<any>;
-        private $start: JQuery;
-        private $end: JQuery;
-        private $sliderElement: JQuery;
-        private slider: noUiSlider.noUiSlider;
+// powerbi-visuals-utils-formattingutils
+import { valueFormatter as valueFormatter, textMeasurementService as tms } from "powerbi-visuals-utils-formattingutils";
+import IValueFormatter = valueFormatter.IValueFormatter;
+import TextProperties = tms.TextProperties;
+import textMeasurementService = tms.textMeasurementService;
 
-        private tableView: ITableView;
-        private slicerData: SampleSlicerData;
+import { Settings, defaultSettings, persistedSettingsDataViewObjectPropertyIdentifiers } from "./settings";
+import { ScalableRange } from "./scalableRange";
+import { ITableView, TableViewOptions,  TableViewFactory } from "./tableView";
+import { SelectionBehavior, SampleSlicerBehaviorOptions } from "./selectionBehavior";
+import { SampleSlicerConverter } from "./sampleSlicerConverter";
+import { FilterDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityFilterService";
 
-        private interactivityService: IInteractivityService;
-        private visualHost: IVisualHost;
+export const enum RangeValueType {
+    Start,
+    End
+}
 
-        private waitingForData: boolean;
-        private isSelectionLoaded: boolean;
-        private isSelectionSaved: boolean;
+export interface SampleSlicerData {
+    categorySourceName: string;
+    formatString: string;
+    slicerDataPoints: SampleSlicerDataPoint[];
+    slicerSettings: Settings;
+}
 
-        private behavior: SelectionBehavior;
-        private settings: Settings;
+export interface SampleSlicerDataPoint extends FilterDataPoint {
+    identity?:  any;
+    category: string | number;
+    isSelectedRangePoint?: boolean;
+    filtered?: boolean;
+}
 
-        public static DefaultFontFamily: string = "helvetica, arial, sans-serif";
-        public static DefaultFontSizeInPt: number = 11;
-        private static СellTotalInnerBorders: number = 2;
-        private static СhicletTotalInnerRightLeftPaddings: number = 14;
-        private static MinSizeOfViewport: number = 0;
-        private static MinColumns: number = 1;
-        private static WidthOfScrollbar: number = 17;
+export interface SampleSlicerCallbacks {
+    getPersistedSelectionState?: () => ISelectionId[];
+    restorePersistedRangeSelectionState?: () => void;
+    applyFilter?: (filter: IFilter) => void;
+    getFilterColumnTarget?: () => IFilterColumnTarget;
+}
 
-        public static ItemContainerSelector: ClassAndSelector = createClassAndSelector('slicerItemContainer');
-        public static SlicerImgWrapperSelector: ClassAndSelector = createClassAndSelector('slicer-img-wrapper');
-        public static SlicerTextWrapperSelector: ClassAndSelector = createClassAndSelector('slicer-text-wrapper');
-        public static SlicerBodyHorizontalSelector: ClassAndSelector = createClassAndSelector('slicerBody-horizontal');
-        public static SlicerBodyVerticalSelector: ClassAndSelector = createClassAndSelector('slicerBody-vertical');
-        public static HeaderTextSelector: ClassAndSelector = createClassAndSelector('headerText');
-        public static ContainerSelector: ClassAndSelector = createClassAndSelector('sampleSlicer');
-        public static LabelTextSelector: ClassAndSelector = createClassAndSelector('slicerText');
-        public static HeaderSelector: ClassAndSelector = createClassAndSelector('slicerHeader');
-        public static InputSelector: ClassAndSelector = createClassAndSelector('slicerCheckbox');
-        public static ClearSelector: ClassAndSelector = createClassAndSelector('clear');
-        public static BodySelector: ClassAndSelector = createClassAndSelector('slicerBody');
-        public static RangeSlicerSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer');
-        public static RangeSlicerHeadSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-head');
-        public static RangeSlicerControlsSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-range');
-        public static RangeSlicerSliderSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-slider');
-        public static RangeSlicerControlSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-control');
-        public static InputClass: ClassAndSelector = createClassAndSelector('numeric-range-slicer-input');
+export class SampleSlicer implements IVisual {
+    // Main properties
+    private currentViewport: IViewport;
+    private dataView: DataView;
+    private slicerData: SampleSlicerData;
 
-        public static converter(
-            dataView: DataView,
-            searchText: string,
-            scalableRange: ScalableRange,
-            visualHost: IVisualHost): SampleSlicerData {
+    private interactivityService: any;
+    private selectionManager: ISelectionManager;
+    private eventService: IVisualEventService;
 
-            if (!dataView ||
-                !dataView.categorical ||
-                !dataView.categorical.categories ||
-                !dataView.categorical.categories[0] ||
-                !dataView.categorical.categories[0].values ||
-                !(dataView.categorical.categories[0].values.length > 0)) {
-                return;
-            }
+    private visualHost: IVisualHost;
+    private settings: Settings;
+    private jsonFilters: powerbiVisualsApi.IFilter[];
 
-            let converter: SampleSlicerConverter = new SampleSlicerConverter(dataView, visualHost);
-            converter.convert(scalableRange);
+    // DOM Elements
+    private root: HTMLElement;
+    private searchWrapper: HTMLElement;
 
-            let slicerSettings: Settings = defaultSettings;
-            if (dataView.metadata.objects) {
-                slicerSettings.general.selection = DataViewObjectsModule.getValue(dataView.metadata.objects, persistedSettingsDataViewObjectPropertyIdentifiers.general.selection, defaultSettings.general.selection);
-                slicerSettings.general.rangeSelectionStart = DataViewObjectsModule.getValue(dataView.metadata.objects, persistedSettingsDataViewObjectPropertyIdentifiers.general.rangeSelectionStart, defaultSettings.general.selection);
-                slicerSettings.general.rangeSelectionEnd = DataViewObjectsModule.getValue(dataView.metadata.objects, persistedSettingsDataViewObjectPropertyIdentifiers.general.rangeSelectionEnd, defaultSettings.general.selection);
-                slicerSettings.general.filter = DataViewObjectsModule.getValue(dataView.metadata.objects, persistedSettingsDataViewObjectPropertyIdentifiers.general.filter, defaultSettings.general.filter);
-            }
+    private sliderElement: HTMLElement;
+    
+    private clearButton: HTMLElement;
+    private searchInput: HTMLInputElement;
+    private startInput: HTMLInputElement;
+    private endInput: HTMLInputElement;
 
-            if (searchText) {
-                searchText = searchText.toLowerCase();
-                converter.dataPoints.forEach(x => x.filtered = x.category.toLowerCase().indexOf(searchText) !== 0);
-            }
+    // External classes
+    private slider: noUiSlider.noUiSlider;
+    private tableView: ITableView;
+    private behavior: SelectionBehavior;
 
-            let categories: DataViewCategoricalColumn = dataView.categorical.categories[0];
+    // Selections
+    private slicerHeader: Selection<any>;
+    private slicerBody: Selection<any>;
 
-            let slicerData: SampleSlicerData;
-            slicerData = {
-                categorySourceName: categories.source.displayName,
-                formatString: valueFormatter.getFormatStringByColumn(categories.source),
-                slicerSettings: slicerSettings,
-                slicerDataPoints: converter.dataPoints
-            };
+    private rangeSlicer: Selection<any>;
+    private rangeSlicerHead: Selection<any>;
+    private rangeSlicerControls: Selection<any>;
+    private rangeSlicerSlider: Selection<any>;
+    private startControl: Selection<any>;
+    private endControl: Selection<any>;
 
-            return slicerData;
+    // State
+    private waitingForData: boolean;
+    private updateFilter: boolean;
+
+    // Constants
+    public static DefaultFontFamily: string = "helvetica, arial, sans-serif";
+    public static DefaultFontSizeInPt: number = 11;
+    private static СellTotalInnerBorders: number = 2;
+    private static СhicletTotalInnerRightLeftPaddings: number = 14;
+    private static MinSizeOfViewport: number = 0;
+    private static MinColumns: number = 1;
+    private static WidthOfScrollbar: number = 17;
+
+    public static ItemContainerSelector: ClassAndSelector = createClassAndSelector('slicerItemContainer');
+    public static SlicerImgWrapperSelector: ClassAndSelector = createClassAndSelector('slicer-img-wrapper');
+    public static SlicerTextWrapperSelector: ClassAndSelector = createClassAndSelector('slicer-text-wrapper');
+    public static SlicerBodyHorizontalSelector: ClassAndSelector = createClassAndSelector('slicerBody-horizontal');
+    public static SlicerBodyVerticalSelector: ClassAndSelector = createClassAndSelector('slicerBody-vertical');
+    public static HeaderTextSelector: ClassAndSelector = createClassAndSelector('headerText');
+    public static ContainerSelector: ClassAndSelector = createClassAndSelector('sampleSlicer');
+    public static LabelTextSelector: ClassAndSelector = createClassAndSelector('slicerText');
+    public static HeaderSelector: ClassAndSelector = createClassAndSelector('slicerHeader');
+    public static InputSelector: ClassAndSelector = createClassAndSelector('slicerCheckbox');
+    public static ClearButtonSelector: ClassAndSelector = createClassAndSelector('clearButton');
+    public static BodySelector: ClassAndSelector = createClassAndSelector('slicerBody');
+    public static RangeSlicerSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer');
+    public static RangeSlicerHeadSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-head');
+    public static RangeSlicerControlsSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-range');
+    public static RangeSlicerSliderSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-slider');
+    public static RangeSlicerControlSelector: ClassAndSelector = createClassAndSelector('numeric-range-slicer-control');
+    public static InputClass: ClassAndSelector = createClassAndSelector('numeric-range-slicer-input');
+
+    public static converter(
+        dataView: DataView,
+        searchText: string,
+        scalableRange: ScalableRange,
+        visualHost: IVisualHost,
+        jsonFilters: powerbiVisualsApi.IFilter[]
+    ): SampleSlicerData {
+
+        if (!dataView ||
+            !dataView.categorical ||
+            !dataView.categorical.categories ||
+            !dataView.categorical.categories[0] ||
+            !dataView.categorical.categories[0].values ||
+            !(dataView.categorical.categories[0].values.length > 0)) {
+            return;
         }
 
-        constructor(options: VisualConstructorOptions) {
-            this.$root = $(options.element);
+        const converter: SampleSlicerConverter = new SampleSlicerConverter(dataView, visualHost, jsonFilters);
+        converter.convert(scalableRange);
+        
+        const slicerSettings: Settings = defaultSettings;
 
-            this.visualHost = options.host;
-            this.behavior = new SelectionBehavior(this.getCallbacks());
-            this.interactivityService = createInteractivityService(options.host);
-
-            this.settings = defaultSettings;
+        if (dataView.metadata.objects) {
+            slicerSettings.general.selection = DataViewObjectsModule.getValue(
+              dataView.metadata.objects,
+              persistedSettingsDataViewObjectPropertyIdentifiers.general.selection,
+              defaultSettings.general.selection
+            );
+            slicerSettings.general.rangeSelectionStart = DataViewObjectsModule.getValue(
+              dataView.metadata.objects,
+              persistedSettingsDataViewObjectPropertyIdentifiers.general.rangeSelectionStart,
+              defaultSettings.general.selection
+            );
+            slicerSettings.general.rangeSelectionEnd = DataViewObjectsModule.getValue(
+              dataView.metadata.objects,
+              persistedSettingsDataViewObjectPropertyIdentifiers.general.rangeSelectionEnd,
+              defaultSettings.general.selection
+            );
+            slicerSettings.general.filter = DataViewObjectsModule.getValue(
+              dataView.metadata.objects,
+              persistedSettingsDataViewObjectPropertyIdentifiers.general.filter,
+              defaultSettings.general.filter
+            );
         }
 
-        public update(options: VisualUpdateOptions) {
-            if (!options ||
-                !options.dataViews ||
-                !options.dataViews[0] ||
-                !options.viewport) {
-                return;
-            }
-
-            // create viewport if not yet created
-            if (!this.currentViewport) {
-                this.currentViewport = options.viewport;
-                this.initContainer();
-            }
-
-            // update dataview
-            const existingDataView = this.dataView;
-            this.dataView = options.dataViews[0];
-
-            // check if the dataView changed to determine if scrollbars need to be reset
-            let resetScrollbarPosition: boolean = true;
-            if (existingDataView) {
-                resetScrollbarPosition = !SampleSlicer.hasSameCategoryIdentity(existingDataView, this.dataView);
-            }
-
-            // update viewport
-            if (options.viewport.height === this.currentViewport.height
-                && options.viewport.width === this.currentViewport.width) {
-                this.waitingForData = false;
-            }
-            else {
-                this.currentViewport = options.viewport;
-            }
-
-            this.updateInternal(resetScrollbarPosition);
+        if (searchText) {
+            searchText = searchText.toLowerCase();
+            converter.dataPoints.forEach(x => x.filtered = x.category.toString().toLowerCase().indexOf(searchText) !== 0);
         }
 
-        private static hasSameCategoryIdentity(dataView1: DataView, dataView2: DataView): boolean {
-            if (!dataView1 ||
-                !dataView2 ||
-                !dataView1.categorical ||
-                !dataView2.categorical) {
+        const categories: DataViewCategoricalColumn = dataView.categorical.categories[0];
+        return <SampleSlicerData> {
+            categorySourceName: categories.source.displayName,
+            formatString: valueFormatter.getFormatStringByColumn(categories.source),
+            slicerSettings: slicerSettings,
+            slicerDataPoints: converter.dataPoints
+        };
+    }
+
+    public static formatValue(value: number): string {
+        return value != null ? valueFormatter.format(String(value), "#") : '';
+    }
+
+    public static getSampleTextProperties(textSize?: number): TextProperties {
+      return <TextProperties>{
+          fontFamily: SampleSlicer.DefaultFontFamily,
+          fontSize: PixelConverter.fromPoint(textSize || SampleSlicer.DefaultFontSizeInPt),
+      };
+    }
+
+    private static getLengthOptional(identity: any[]): number {
+        if (identity) {
+            return identity.length;
+        }
+        return 0;
+    }
+
+    private static createElement(htmlString: string): HTMLElement {
+        const tmpParent = document.createElement('div');
+        tmpParent.innerHTML = htmlString;
+        return <HTMLElement> tmpParent.firstChild;
+    }
+
+    private static appendInputElement(parent: HTMLElement): HTMLInputElement {
+        parent.appendChild(
+            SampleSlicer.createElement(`<input type="text" class="${SampleSlicer.InputClass.className}"/>`)
+        );
+        return <HTMLInputElement>parent.querySelector("input");
+    }
+
+    private static getSlicerBodyViewport(currentViewport: IViewport): IViewport {
+      const height: number = currentViewport.height,
+          width: number = currentViewport.width - SampleSlicer.WidthOfScrollbar;
+      return {
+          height: Math.max(height, SampleSlicer.MinSizeOfViewport),
+          width: Math.max(width, SampleSlicer.MinSizeOfViewport)
+      };
+    }
+
+    private static hasSameCategoryIdentity(dataView1: DataView, dataView2: DataView): boolean {
+        if (!dataView1 ||
+            !dataView2 ||
+            !dataView1.categorical ||
+            !dataView2.categorical) {
+            return false;
+        }
+
+        let dv1Categories: DataViewCategoricalColumn[] = dataView1.categorical.categories;
+        let dv2Categories: DataViewCategoricalColumn[] = dataView2.categorical.categories;
+
+        if (!dv1Categories ||
+            !dv2Categories ||
+            dv1Categories.length !== dv2Categories.length) {
+            return false;
+        }
+
+        for (let i: number = 0, len: number = dv1Categories.length; i < len; i++) {
+            let dv1Identity: any[] = (<DataViewCategoryColumn>dv1Categories[i]).identity;
+            let dv2Identity: any[] = (<DataViewCategoryColumn>dv2Categories[i]).identity;
+
+            let dv1Length: number = this.getLengthOptional(dv1Identity);
+            if ((dv1Length < 1) || dv1Length !== this.getLengthOptional(dv2Identity)) {
                 return false;
             }
 
-            let dv1Categories: DataViewCategoricalColumn[] = dataView1.categorical.categories;
-            let dv2Categories: DataViewCategoricalColumn[] = dataView2.categorical.categories;
-
-            if (!dv1Categories ||
-                !dv2Categories ||
-                dv1Categories.length !== dv2Categories.length) {
-                return false;
-            }
-
-            for (let i: number = 0, len: number = dv1Categories.length; i < len; i++) {
-                let dv1Identity: DataViewScopeIdentity[] = (<DataViewCategoryColumn>dv1Categories[i]).identity;
-                let dv2Identity: DataViewScopeIdentity[] = (<DataViewCategoryColumn>dv2Categories[i]).identity;
-
-                let dv1Length: number = this.getLengthOptional(dv1Identity);
-                if ((dv1Length < 1) || dv1Length !== this.getLengthOptional(dv2Identity)) {
+            for (let j: number = 0; j < dv1Length; j++) {
+                if (!isEqual(dv1Identity[j].key, dv2Identity[j].key)) {
                     return false;
                 }
+            }
+        }
 
-                for (let j: number = 0; j < dv1Length; j++) {
-                    if (!_.isEqual(dv1Identity[j].key, dv2Identity[j].key)) {
-                        return false;
-                    }
+        return true;
+    }
+
+    constructor(options: VisualConstructorOptions) {
+        if (window.location !== window.parent.location) {
+            require("core-js/stable");
+        }
+
+        this.root = options.element;
+        this.visualHost = options.host;
+        this.behavior = new SelectionBehavior(this.getCallbacks());
+        this.interactivityService = createInteractivityFilterService(options.host);
+
+        this.settings = defaultSettings;
+        this.eventService = options.host.eventService;
+        this.selectionManager = options.host.createSelectionManager();
+    }
+
+    public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
+        return [];
+    }
+
+    public update(options: VisualUpdateOptions) {
+        if (!options ||
+            !options.dataViews ||
+            !options.dataViews[0] ||
+            !options.viewport) {
+            return;
+        }
+        this.eventService.renderingStarted(options);
+        
+        this.jsonFilters = options.jsonFilters;
+        this.restoreRangeFilter(options.dataViews[0]);
+        
+        // create viewport if not yet created
+        if (!this.currentViewport) {
+            this.currentViewport = options.viewport;
+            this.initContainer();
+        }
+        
+        // update dataview
+        const existingDataView = this.dataView;
+        this.dataView = options.dataViews[0];
+
+        // check if the dataView changed to determine if scrollbars need to be reset
+        let categoryIdentityChanged: boolean = true;
+        if (existingDataView) {
+          categoryIdentityChanged = !SampleSlicer.hasSameCategoryIdentity(existingDataView, this.dataView);
+        }
+
+        // update viewport
+        if (options.viewport.height === this.currentViewport.height
+            && options.viewport.width === this.currentViewport.width) {
+            this.waitingForData = false;
+        }
+        else {
+            this.currentViewport = options.viewport;
+        }
+
+        this.updateInternal(categoryIdentityChanged);
+        this.eventService.renderingFinished(options);
+    }
+
+    private initContainer() {
+        const settings: Settings = this.settings,
+            slicerBodyViewport: IViewport = SampleSlicer.getSlicerBodyViewport(this.currentViewport);
+
+        // Prevents visual container from doing any other actions on keypress
+        this.root.addEventListener("keyup", (event: KeyboardEvent) => {
+          event.stopPropagation()
+        });
+
+        this.root.addEventListener('contextmenu', (event) => {
+            const emptySelection = {
+                "measures": [],
+                "dataMap": {
                 }
-            }
+            };
+            
+            this.selectionManager.showContextMenu(emptySelection, {
+                x: event.clientX,
+                y: event.clientY
+            });
+            event.preventDefault();
+        });
 
-            return true;
-        }
+        this.root.addEventListener("keydown", (event: KeyboardEvent) =>{
+            event.stopPropagation()
+        });
+        const outerContainer = SampleSlicer.createElement("<div class='sampleSlicer outerContainer' />");
+        this.root.appendChild(outerContainer)
 
-        private static getLengthOptional(identity: DataViewScopeIdentity[]): number {
-            if (identity) {
-                return identity.length;
-            }
-            return 0;
-        }
 
-        public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
-            return [];
-        }
+        // this.initClearButton(outerContainer); // Temporary unavailable 
+        this.initHeader(outerContainer);
+        this.initRangeSlicer(outerContainer);
 
-        private restoreFilter(data: SampleSlicerData) {
-            let restoredFilter: IAdvancedFilter =
-            FilterManager.restoreFilter(data && data.slicerSettings.general.filter) as IAdvancedFilter;
-            if (restoredFilter) {
-                restoredFilter.target = this.getCallbacks().getAdvancedFilterColumnTarget();
-                // reset to default
-                // this.onRangeInputTextboxChange("", RangeValueType.Start, true);
-                // this.onRangeInputTextboxChange("", RangeValueType.End, true);
-                // change value to correspond the filter values
-                // in some case we can get value with one condition only
-                if (restoredFilter.conditions.length === 1) {
-                    let value: {
-                        max?: any,
-                        min?: any
-                    } = {};
+        const slicerContainer: Selection<any> = d3Select(outerContainer)
+            .append('div')
+            .classed(SampleSlicer.ContainerSelector.className, true)
+            .style('background', '#ffffff');
 
-                    let convertedValues = data.slicerDataPoints.map( (dataPoint: SampleSlicerDataPoint) => +dataPoint.category );
-                    value.min = d3.min(convertedValues);
-                    value.max = d3.max(convertedValues);
+        this.initSearchWidget(slicerContainer.node());
 
-                    let operator = restoredFilter.conditions[0].operator;
-                    if (operator === "LessThanOrEqual" || operator === "LessThan") {
-                        restoredFilter.conditions.push({
-                            operator: "GreaterThan",
-                            value: value.min
-                        });
-                    }
-                    if (operator === "GreaterThanOrEqual" || operator === "GreaterThan") {
-                        restoredFilter.conditions.push({
-                            operator: "LessThan",
-                            value: value.max
-                        });
-                    }
-                }
+        // SLICER BODY & TABLE VIEW
+        this.slicerBody = slicerContainer
+            .append('div')
+            .classed(SampleSlicer.BodySelector.className, true)
+            .style('height', `${slicerBodyViewport.height - 120}px`);
 
-                let rangeValue: ValueRange<number> = <ValueRange<number>>{};
+        this.initTableView();
+    }
 
-                restoredFilter.conditions.forEach( (condition: IAdvancedFilterCondition) => {
-                    let value = condition.value;
-                    let operator = condition.operator;
-                    if (operator === "LessThanOrEqual" || operator === "LessThan") {
-                        rangeValue.max = <number>value;
-                    }
-                    if (operator === "GreaterThanOrEqual" || operator === "GreaterThan") {
-                        rangeValue.min = <number>value;
-                    }
-                });
-
-                this.behavior.scalableRange.setValue(rangeValue);
-                this.onRangeInputTextboxChange(rangeValue.min.toString(), RangeValueType.Start);
-                this.onRangeInputTextboxChange(rangeValue.max.toString(), RangeValueType.End);
-            }
-        }
-
-        private updateInternal(resetScrollbarPosition: boolean) {
-            // convert data to internal representation
-            let data = SampleSlicer.converter(
+    private updateInternal(categoryIdentityChanged: boolean): void {
+        // convert data to internal representation
+        let searchInputValue = (<HTMLInputElement>this.searchInput) 
+                ? (<HTMLInputElement>this.searchInput).value
+                : "",
+            data = SampleSlicer.converter(
                 this.dataView,
-                this.$searchInput.val(),
+                searchInputValue,
                 this.behavior.scalableRange,
-                this.visualHost);
+                this.visualHost,
+                this.jsonFilters
+            );
 
-            if (!data) {
-                this.tableView.empty();
-
-                return;
-            }
-
-            this.restoreFilter(data);
-
-            if (this.slicerData) {
-                if (this.isSelectionSaved) {
-                    this.isSelectionLoaded = true;
-                } else {
-                    this.isSelectionLoaded = this.slicerData.slicerSettings.general.selection === data.slicerSettings.general.selection;
-                }
-            } else {
-                this.isSelectionLoaded = false;
-            }
-
-            this.slicerData = data;
-            this.settings = this.slicerData.slicerSettings;
-
-            let height: number = this.settings.slicerText.height;
-
-            this.slicerBody.style({
-                'height': (this.currentViewport.height - 120) + "px"
-            });
-
-            // update tableView and render it
-            this.tableView
-                .rowHeight(height)
-                .columnWidth(this.settings.slicerText.width)
-                .rows(this.settings.general.rows)
-                .columns(this.settings.general.columns)
-                .data(
-                data.slicerDataPoints.filter(x => !x.filtered),
-                (d: SampleSlicerDataPoint) => $.inArray(d, data.slicerDataPoints),
-                resetScrollbarPosition)
-                .viewport(this.getSlicerBodyViewport(this.currentViewport))
-                .render();
-
-            this.updateSliderControl();
-            this.updateSliderInputTextboxes();
+        if (!data) {
+            this.tableView.empty();
+            return;
+        }
+        
+        this.slicerData = data;
+       
+        this.settings = this.slicerData.slicerSettings;
+        
+        if (this.slicerBody) {
+            this.slicerBody.style('height', `${this.currentViewport.height - 120}px`);
         }
 
-        public createInputElement(control: JQuery): JQuery {
-            let $element: JQuery = $('<input type="text"/>')
-                .attr("type", "text")
-                .addClass(SampleSlicer.InputClass.className)
-                .appendTo(control);
-            return $element;
+        this.updateTableView(categoryIdentityChanged);
+
+        this.updateRangeSlicer();
+    }
+
+    private initHeader(parent: HTMLElement): void {
+      const headerText = this.settings.headerText;
+
+      this.slicerHeader = d3Select(parent)
+          .append('div')
+          .classed(SampleSlicer.HeaderSelector.className, true);
+      
+      this.slicerHeader
+          .append('div')
+          .classed(SampleSlicer.HeaderTextSelector.className, true)
+          .style('margin-left', PixelConverter.toString(headerText.marginLeft))
+          .style('margin-top', PixelConverter.toString(headerText.marginTop))
+    }
+
+    private updateHeader(): void {
+      this.slicerHeader
+        .select(SampleSlicer.HeaderTextSelector.selectorName)
+        .text(this.slicerData.categorySourceName);
+    }
+    
+    private initClearButton(parent: HTMLElement): void {
+        this.clearButton = SampleSlicer.createElement(`<div class="${SampleSlicer.ClearButtonSelector.className}"> </div>`);
+        
+        parent.appendChild(this.clearButton);
+        
+        this.clearButton.addEventListener('click', () => {
+            this.behavior.clearFilters();
+        });
+    }
+
+    private initTableView(): void {
+        const slicerText = this.settings.slicerText,
+            rows = this.settings.general.rows,
+            columns = this.settings.general.columns,
+            viewport = SampleSlicer.getSlicerBodyViewport(this.currentViewport),
+            slicerBody = this.slicerBody;
+
+        let rowEnterHandler = (rowSelection: Selection<any>) => {
+            this.enterSelection(rowSelection);
+        };
+
+        let rowUpdateHandler = (rowSelection: Selection<any>) => {
+            this.updateSelection(rowSelection);
+        };
+
+        let rowExitHandler = (rowSelection: Selection<any>) => {
+            rowSelection.remove();
+        };
+
+        const rowHeight = slicerText.height !== 0
+          ? slicerText.height
+          : textMeasurementService.estimateSvgTextHeight(SampleSlicer.getSampleTextProperties(slicerText.textSize))
+
+        const tableViewOptions: TableViewOptions = {
+            rowHeight,
+            columnWidth: slicerText.width,
+            rows,
+            columns,
+            onEnter: rowEnterHandler,
+            onExit: rowExitHandler,
+            onUpdate: rowUpdateHandler,
+            scrollEnabled: true,
+            viewport,
+            baseContainer: slicerBody,
+        };
+
+        this.tableView = TableViewFactory.createTableView(tableViewOptions);
+    }
+
+    private updateTableView(resetScrollbarPosition: boolean): void {
+        if (!this.tableView || !this.slicerData || !this.settings) {
+            return;
         }
 
-        private initContainer() {
-            let settings: Settings = this.settings,
-                slicerBodyViewport: IViewport = this.getSlicerBodyViewport(this.currentViewport);
+        let slicerDataPoints: SampleSlicerDataPoint[] = this.slicerData.slicerDataPoints,
+            slicerText = this.settings.slicerText,
+            rows = this.settings.general.rows,
+            columns = this.settings.general.columns;
 
+        this.tableView
+            .rowHeight(slicerText.height)
+            .columnWidth(slicerText.width)
+            .rows(rows)
+            .columns(columns)
+            .data(
+                slicerDataPoints.filter(x => !x.filtered),
+                (d: SampleSlicerDataPoint) => slicerDataPoints.indexOf(d),
+                resetScrollbarPosition
+            )
+            .viewport(SampleSlicer.getSlicerBodyViewport(this.currentViewport))
+            .render();
+    }
 
-            // Prevents visual container from doing any other actions on keypress
-            this.$root.on('keyup keydown', (event: JQueryEventObject) => {
-                event.stopPropagation();
-            });
+    private initRangeSlicer(parent: HTMLElement): void {
 
-            this.rangeSlicer = d3.select(this.$root.get(0))
-                .append('div')
-                .classed(SampleSlicer.RangeSlicerSelector.className, true)
-                .style({
-                    'background': '#ffffff'
-                });
+      this.rangeSlicer = d3Select(parent)
+          .append('div')
+          .classed(SampleSlicer.RangeSlicerSelector.className, true)
+          .style('background', '#ffffff');
 
-            this.slicerHeader = this.rangeSlicer
-                .append('div')
-                .classed(SampleSlicer.HeaderSelector.className, true);
+        this.rangeSlicerHead = this.rangeSlicer
+            .append('div')
+            .classed(SampleSlicer.RangeSlicerHeadSelector.className, true);
 
-            this.rangeSlicerHead = this.rangeSlicer
-                .append('div')
-                .classed(SampleSlicer.RangeSlicerHeadSelector.className, true);
+        this.rangeSlicerControls = this.rangeSlicerHead
+            .append('div')
+            .classed(SampleSlicer.RangeSlicerControlsSelector.className, true);
 
-            this.rangeSlicerControls = this.rangeSlicerHead
-                .append('div')
-                .classed(SampleSlicer.RangeSlicerControlsSelector.className, true);
+        this.rangeSlicerSlider = this.rangeSlicerHead
+            .append('div')
+            .classed(SampleSlicer.RangeSlicerSliderSelector.className, true);
 
-            this.rangeSlicerSlider = this.rangeSlicerHead
-                .append('div')
-                .classed(SampleSlicer.RangeSlicerSliderSelector.className, true);
+        this.startControl = this.rangeSlicerControls
+            .append('div')
+            .classed(SampleSlicer.RangeSlicerControlSelector.className, true);
 
-            this.startControl = this.rangeSlicerControls
-                .append('div')
-                .classed(SampleSlicer.RangeSlicerControlSelector.className, true);
+        this.endControl = this.rangeSlicerControls
+            .append('div')
+            .classed(SampleSlicer.RangeSlicerControlSelector.className, true);
 
-            this.endControl = this.rangeSlicerControls
-                .append('div')
-                .classed(SampleSlicer.RangeSlicerControlSelector.className, true);
+        this.startInput = SampleSlicer.appendInputElement(this.startControl.nodes()[0]);
+        this.endInput = SampleSlicer.appendInputElement(this.endControl.nodes()[0]);
 
-            let $startControl: JQuery = $(this.startControl[0][0]);
-            let $endControl: JQuery = $(this.endControl[0][0]);
+        this.startInput.addEventListener("change", (event: Event) => {
+            const inputString: string = this.startInput.value;
+            this.onRangeInputTextboxChange(inputString, RangeValueType.Start);
+        });
 
-            this.$start = this.createInputElement($startControl);
-            this.$end = this.createInputElement($endControl);
-
-            let slicerContainer: Selection<any> = d3.select(this.$root.get(0))
-                .append('div')
-                .classed(SampleSlicer.ContainerSelector.className, true)
-                .style({
-                    'background': '#ffffff'
-                });
-
-            this.slicerHeader
-                .append('div')
-                .classed(SampleSlicer.HeaderTextSelector.className, true)
-                .style({
-                    'margin-left': PixelConverter.toString(settings.headerText.marginLeft),
-                    'margin-top': PixelConverter.toString(settings.headerText.marginTop)
-                });
-
-            this.createSearchHeader($(slicerContainer.node()));
-
-            this.slicerBody = slicerContainer
-                .append('div')
-                .classed(SampleSlicer.BodySelector.className, true)
-                .style({
-                    'height': (slicerBodyViewport.height - 120) + "px"
-                });
-
-            let rowEnter = (rowSelection: Selection<any>) => {
-                this.enterSelection(rowSelection);
-            };
-
-            let rowUpdate = (rowSelection: Selection<any>) => {
-                this.updateSelection(rowSelection);
-            };
-
-            let rowExit = (rowSelection: Selection<any>) => {
-                rowSelection.remove();
-            };
-
-            let tableViewOptions: TableViewViewOptions = {
-                rowHeight: this.getRowHeight(),
-                columnWidth: this.settings.slicerText.width,
-                rows: this.settings.general.rows,
-                columns: this.settings.general.columns,
-                enter: rowEnter,
-                exit: rowExit,
-                update: rowUpdate,
-                scrollEnabled: true,
-                viewport: this.getSlicerBodyViewport(this.currentViewport),
-                baseContainer: this.slicerBody,
-            };
-
-            this.bindHandlersToInputElements();
-            this.tableView = TableViewFactory.createTableView(tableViewOptions);
-        }
-
-        private bindHandlersToInputElements(): void {
-
-            this.$start.on("change", (event: JQueryEventObject) => {
-                let inputString = this.$start.val();
+        this.startInput.addEventListener("keyup", (event: KeyboardEvent) => {
+            if (event.keyCode === 13) {
+                const inputString: string = this.startInput.value;
                 this.onRangeInputTextboxChange(inputString, RangeValueType.Start);
-            });
+            }
+        });
 
-            this.$start.on("keyup", (event: JQueryEventObject) => {
-                if (event.keyCode === 13) {
-                    let inputString = this.$start.val();
-                    this.onRangeInputTextboxChange(inputString, RangeValueType.Start);
-                }
-            });
+        this.startInput.addEventListener("focus", (event: Event) => {
+            this.startInput.value = SampleSlicer.formatValue(this.behavior.scalableRange.getValue().min);
+            this.startInput.select();
+        });
 
-            this.$start.on("focus", (event: JQueryEventObject) => {
-                this.$start.val(this.formatValue(this.behavior.scalableRange.getValue().min));
-                this.$start.select();
-            });
+        this.endInput.addEventListener("change", (event: Event) => {
+            const inputString: string = this.endInput.value;
+            this.onRangeInputTextboxChange(inputString, RangeValueType.End);
+        });
 
-            this.$end.on("change", (event: JQueryEventObject) => {
-                let inputString = this.$end.val();
+        this.endInput.addEventListener("keyup", (event: KeyboardEvent) => {
+            if (event.keyCode === 13) {
+                const inputString: string = this.endInput.value;
                 this.onRangeInputTextboxChange(inputString, RangeValueType.End);
-            });
+            }
+        });
 
-            this.$end.on("keyup", (event: JQueryEventObject) => {
-                if (event.keyCode === 13) {
-                    let inputString = this.$end.val();
-                    this.onRangeInputTextboxChange(inputString, RangeValueType.End);
+        this.endInput.addEventListener("focus", (event: Event) => {
+            this.endInput.value = SampleSlicer.formatValue(this.behavior.scalableRange.getValue().max);
+            this.endInput.select();
+        });
+    }
+
+    private updateRangeSlicer(): void {
+        if (!this.slider) {
+            
+            const sliderContainer: HTMLElement = (!!this.rangeSlicerSlider) && this.rangeSlicerSlider.nodes()[0];
+            if (sliderContainer) {
+                this.initNoUISlider(sliderContainer);
+            }
+        } else {
+            // get the scaled range value
+            // and use it to set the slider
+            let scaledValue = this.behavior.scalableRange.getScaledValue();
+            this.slider.set([scaledValue.min, scaledValue.max]);
+        }
+        if( this.startInput && this.endInput){
+            this.startInput.value =  SampleSlicer.formatValue(this.behavior.scalableRange.getValue().min);
+            this.endInput.value =  SampleSlicer.formatValue(this.behavior.scalableRange.getValue().max);
+        }
+    }
+
+    private initNoUISlider(parent: HTMLElement) {
+        this.sliderElement = parent.appendChild(
+            SampleSlicer.createElement('<div />')
+        );
+
+        const scaledValue = this.behavior.scalableRange.getScaledValue();
+        const sliderOptions: noUiSlider.Options = {
+            connect: true,
+            behaviour: "tap-drag",
+            range: {
+                min: 0,
+                max: 100
+            },
+            start: [scaledValue.min, scaledValue.max]
+        };
+
+        noUiSlider.create(this.sliderElement, sliderOptions);
+
+        this.slider = (<noUiSlider.Instance>this.sliderElement).noUiSlider;
+
+        // populate slider event handlers
+        this.slider.on(
+          "change",
+          (data: any[], index: number, values: any) => {
+              this.behavior.scalableRange.setScaledValue({ min: values[0], max: values[1] });
+              this.behavior.updateOnRangeSelectonChange();
+              this.updateInternal(false);
+          }
+        );
+    }
+
+    private initSearchWidget(parent: HTMLElement): void {
+        let counter: number = 0;
+
+        this.searchWrapper = SampleSlicer.createElement(`<div class="searchHeader show" />`);
+        parent.appendChild(this.searchWrapper);
+
+        this.searchWrapper.appendChild(
+          SampleSlicer.createElement(`<div class="search" title="Search" />`)
+        );
+
+        this.searchInput = <HTMLInputElement>SampleSlicer.createElement(`<input type="text" drag-resize-disabled class="searchInput"/>`);
+
+        const searchEventlinstener = () => {
+          this.visualHost.persistProperties(<VisualObjectInstancesToPersist>{
+              merge: [{
+                  objectName: "general",
+                  selector: null,
+                  properties: {
+                      counter: counter++
+                  }
+              }]
+          });
+          this.updateInternal(false);
+        };
+
+        this.searchInput.addEventListener(
+            "input",
+            searchEventlinstener
+        );
+
+        this.searchWrapper.appendChild(this.searchInput);
+    }
+
+    private restoreRangeFilter(dataView: DataView){
+        if (this.jsonFilters && 
+            (dataView.metadata && dataView.metadata.columns && dataView.metadata.columns[0])
+        ){
+            const filter: IAdvancedFilter = <IAdvancedFilter> this.jsonFilters.find((filter: IAdvancedFilter) => {
+                const target: { table?: string, column?: string} = <any>filter.target;
+                const source: string[] | undefined = String(dataView.metadata.columns[0].queryName).split('.');
+                if(source && source[0] && source[1]){
+                    return filter.logicalOperator == "And" && filter.target && target.table === source[0] && target.column === source[1];
+                } else {
+                    return false;
                 }
             });
 
-            this.$end.on("focus", (event: JQueryEventObject) => {
-                this.$end.val(this.formatValue(this.behavior.scalableRange.getValue().max));
-                this.$end.select();
-            });
-        }
-
-        private createSliderOptions(): noUiSlider.Options {
-            let value = this.behavior.scalableRange.getScaledValue();
-
-            let options: noUiSlider.Options = {
-                connect: true,
-                behaviour: "tap-drag",
-                range: {
-                    min: 0,
-                    max: 100
-                },
-                start: [value.min, value.max]
-            };
-
-            return options;
-        }
-
-
-        private updateSliderControl(): void {
-            let $sliderContainer: JQuery = $(this.rangeSlicerSlider[0][0]);
-
-            if (!this.slider) {
-                // create slider
-                this.$sliderElement = $('<div/>')
-                    .appendTo($sliderContainer);
-                (<any>window).noUiSlider.create(this.$sliderElement.get(0), this.createSliderOptions());
-
-                this.slider = (<noUiSlider.Instance>this.$sliderElement.get(0)).noUiSlider;
-
-                // populate slider event handlers
-                this.slider.on("change", (data: any[], index: number, values: any) => {
-                    this.behavior.scalableRange.setScaledValue({ min: values[0], max: values[1] });
-                    this.behavior.updateOnRangeSelectonChange();
-                });
-
-            } else {
-                // get the scaled range value
-                // and use it to set the slider
-                let scaledValue = this.behavior.scalableRange.getScaledValue();
-                this.slider.set([scaledValue.min, scaledValue.max]);
-            }
-        }
-
-        public updateSliderInputTextboxes(): void {
-            this.$start.val(this.formatValue(this.behavior.scalableRange.getValue().min));
-            this.$end.val(this.formatValue(this.behavior.scalableRange.getValue().max));
-        }
-
-        public formatValue(value: number): string {
-            return value != null ? valueFormatter.format(value, "#") : '';
-        }
-
-        private onRangeInputTextboxChange(inputString: string, rangeValueType: RangeValueType, supressFilter: boolean = false): void {
-            // parse input
-            let inputValue: number;
-            if (!inputString) {
-                inputValue = null;
-            } else {
-                inputValue = parseFloat(inputString);
-                if (isNaN(inputValue)) {
-                    inputValue = null;
-                }
-            }
-
-            // update range selection model if changed
-            let range: ValueRange<number> = this.behavior.scalableRange.getValue();
-            if (rangeValueType === RangeValueType.Start) {
-                if (range.min === inputValue) {
-                    return;
-                }
-                range.min = inputValue;
-            }
-            else if (rangeValueType === RangeValueType.End) {
-                if (range.max === inputValue) {
-                    return;
-                }
-                range.max = inputValue;
-            }
-
-            if (!supressFilter) {
-                this.behavior.scalableRange.setValue(range);
-
-                // trigger range change processing
-                this.behavior.updateOnRangeSelectonChange();
-            }
-        }
-
-        private enterSelection(rowSelection: Selection<any>): void {
-            let settings: Settings = this.settings;
-
-            let ulItemElement: UpdateSelection<any> = rowSelection
-                .selectAll('ul')
-                .data((dataPoint: SampleSlicerDataPoint) => {
-                    return [dataPoint];
-                });
-
-            ulItemElement
-                .enter()
-                .append('ul');
-
-            ulItemElement
-                .exit()
-                .remove();
-
-            let listItemElement: UpdateSelection<any> = ulItemElement
-                .selectAll(SampleSlicer.ItemContainerSelector.selectorName)
-                .data((dataPoint: SampleSlicerDataPoint) => {
-                    return [dataPoint];
-                });
-
-            listItemElement
-                .enter()
-                .append('li')
-                .classed(SampleSlicer.ItemContainerSelector.className, true);
-
-            listItemElement.style({
-                'margin-left': PixelConverter.toString(settings.slicerItemContainer.marginLeft)
-            });
-
-            let slicerImgWrapperSelection: UpdateSelection<any> = listItemElement
-                .selectAll(SampleSlicer.SlicerImgWrapperSelector.className)
-                .data((dataPoint: SampleSlicerDataPoint) => {
-                    return [dataPoint];
-                });
-
-            slicerImgWrapperSelection
-                .enter()
-                .append('img')
-                .classed(SampleSlicer.SlicerImgWrapperSelector.className, true);
-
-            slicerImgWrapperSelection
-                .exit()
-                .remove();
-
-            let slicerTextWrapperSelection: UpdateSelection<any> = listItemElement
-                .selectAll(SampleSlicer.SlicerTextWrapperSelector.selectorName)
-                .data((dataPoint: SampleSlicerDataPoint) => {
-                    return [dataPoint];
-                });
-
-            slicerTextWrapperSelection
-                .enter()
-                .append('div')
-                .classed(SampleSlicer.SlicerTextWrapperSelector.className, true);
-
-            let labelTextSelection: UpdateSelection<any> = slicerTextWrapperSelection
-                .selectAll(SampleSlicer.LabelTextSelector.selectorName)
-                .data((dataPoint: SampleSlicerDataPoint) => {
-                    return [dataPoint];
-                });
-
-            labelTextSelection
-                .enter()
-                .append('span')
-                .classed(SampleSlicer.LabelTextSelector.className, true);
-
-            labelTextSelection.style({
-                'font-size': PixelConverter.fromPoint(settings.slicerText.textSize),
-            });
-
-            labelTextSelection
-                .exit()
-                .remove();
-
-            slicerTextWrapperSelection
-                .exit()
-                .remove();
-
-            listItemElement
-                .exit()
-                .remove();
-        }
-
-        private updateSelection(rowSelection: Selection<any>): void {
-            let settings: Settings = this.settings,
-                data: SampleSlicerData = this.slicerData;
-
-            if (data && settings) {
-
-                this.slicerHeader
-                    .select(SampleSlicer.HeaderTextSelector.selectorName)
-                    .text(this.slicerData.categorySourceName);
-
-                let slicerText: Selection<any> = rowSelection.selectAll(SampleSlicer.LabelTextSelector.selectorName),
-                    textProperties: TextProperties = SampleSlicer.getSampleTextProperties(settings.slicerText.textSize),
-                    formatString: string = data.formatString;
-
-                slicerText.text((d: SampleSlicerDataPoint) => {
-                    let maxWidth: number = 0;
-
-                    textProperties.text = valueFormatter.format(d.category, formatString);
-
-                    if (this.settings.slicerText.width === 0) {
-                        let slicerBodyViewport: IViewport = this.getSlicerBodyViewport(this.currentViewport);
-
-                        maxWidth = (slicerBodyViewport.width / (this.tableView.computedColumns || SampleSlicer.MinColumns)) -
-                            SampleSlicer.СhicletTotalInnerRightLeftPaddings -
-                            SampleSlicer.СellTotalInnerBorders;
-                        return textMeasurementService.getTailoredTextOrDefault(textProperties, maxWidth);
-                    }
-                    else {
-                        maxWidth = this.settings.slicerText.width -
-                            SampleSlicer.СhicletTotalInnerRightLeftPaddings -
-                            SampleSlicer.СellTotalInnerBorders;
-
-                        return textMeasurementService.getTailoredTextOrDefault(textProperties, maxWidth);
-                    }
-                });
-
-                rowSelection
-                    .style({
-                        'padding': PixelConverter.toString(settings.slicerText.padding)
-                    });
-
-                rowSelection.selectAll(SampleSlicer.ItemContainerSelector.selectorName).style({
-                    'font-size': PixelConverter.fromPoint(settings.slicerText.textSize)
-                });
-
-                if (this.interactivityService && this.slicerBody) {
-                    this.interactivityService.applySelectionStateToData(data.slicerDataPoints);
-
-                    let slicerBody: Selection<any> = this.slicerBody.attr('width', this.currentViewport.width),
-                        slicerItemContainers: Selection<any> = slicerBody.selectAll(SampleSlicer.ItemContainerSelector.selectorName);
-
-                    let behaviorOptions: SampleSlicerBehaviorOptions = {
-                        dataPoints: data.slicerDataPoints,
-                        slicerItemContainers: slicerItemContainers,
-                        interactivityService: this.interactivityService,
-                        slicerSettings: data.slicerSettings,
-                        isSelectionLoaded: this.isSelectionLoaded
-                    };
-
-                    this.interactivityService.bind(data.slicerDataPoints, this.behavior, behaviorOptions, {
-
-                    });
-
-                    this.behavior.styleSlicerInputs(
-                        rowSelection.select(SampleSlicer.ItemContainerSelector.selectorName),
-                        this.interactivityService.hasSelection());
-                }
-                else {
-                    this.behavior.styleSlicerInputs(rowSelection.select(SampleSlicer.ItemContainerSelector.selectorName), false);
-                }
-            }
-        }
-
-        private createSearchHeader(container: JQuery): void {
-            let counter: number = 0;
-
-            this.$searchHeader = $("<div>")
-                .appendTo(container)
-                .addClass("searchHeader")
-                .addClass("show");
-
-            $("<div>").appendTo(this.$searchHeader)
-                .attr("title", "Search")
-                .addClass("search");
-
-            this.$searchInput = $("<input>").appendTo(this.$searchHeader)
-                .attr("type", "text")
-                .attr("drag-resize-disabled", "true")
-                .addClass("searchInput")
-                .on("input", () => this.visualHost.persistProperties(<VisualObjectInstancesToPersist>{
-                    merge: [{
-                        objectName: "general",
-                        selector: null,
-                        properties: {
-                            counter: counter++
-                        }
-                    }]
-                }));
-        }
-
-        private getSlicerBodyViewport(currentViewport: IViewport): IViewport {
-            let settings: Settings = this.settings,
-                height: number = currentViewport.height,
-                width: number = currentViewport.width - SampleSlicer.WidthOfScrollbar;
-            return {
-                height: Math.max(height, SampleSlicer.MinSizeOfViewport),
-                width: Math.max(width, SampleSlicer.MinSizeOfViewport)
-            };
-        }
-
-        public static getSampleTextProperties(textSize?: number): TextProperties {
-            return <TextProperties>{
-                fontFamily: SampleSlicer.DefaultFontFamily,
-                fontSize: PixelConverter.fromPoint(textSize || SampleSlicer.DefaultFontSizeInPt),
-            };
-        }
-
-        private getRowHeight(): number {
-            let textSettings = this.settings.slicerText;
-            return textSettings.height !== 0
-                ? textSettings.height
-                : textMeasurementService.estimateSvgTextHeight(SampleSlicer.getSampleTextProperties(textSettings.textSize));
-        }
-
-        /**
-         *  Callbacks consumed by the SelectionBehavior class
-         * */
-        private getCallbacks(): SampleSlicerCallbacks {
-            let callbacks: SampleSlicerCallbacks = {};
-
-            callbacks.applyAdvancedFilter = (filter: IAdvancedFilter): void => {
-                this.visualHost.applyJsonFilter(filter, "general", "filter", FilterAction.merge );
-            };
-
-            callbacks.getAdvancedFilterColumnTarget = (): IFilterColumnTarget => {
-                let categories: DataViewCategoricalColumn = this.dataView.categorical.categories[0];
-
-                let target: IFilterColumnTarget = {
-                    table: categories.source.queryName.substr(0, categories.source.queryName.indexOf('.')),
-                    column: categories.source.displayName
+            if (filter && filter.conditions) {
+                const greaterThen = filter.conditions.find(cond => cond.operator === "GreaterThan"),
+                    lessThen = filter.conditions.find(cond => cond.operator === "LessThan");
+                const range: {
+                    min: number | null;
+                    max: number | null;
+                } = {
+                    min: greaterThen ? Number(greaterThen.value) : null,
+                    max: lessThen ? Number(lessThen.value) : null
                 };
 
-                return target;
-            };
-
-            callbacks.getPersistedSelectionState = (): powerbi.extensibility.ISelectionId[] => {
-                try {
-                    return JSON.parse(this.slicerData.slicerSettings.general.selection) || [];
-                } catch (ex) {
-                    return [];
-                }
-            };
-            return callbacks;
+                this.behavior.scalableRange.setValue(range);
+            }
         }
+    }
+
+    private onRangeInputTextboxChange(
+        inputString: string,
+        rangeValueType: RangeValueType,
+        supressFilter: boolean = false
+    ): void {
+        // parse input
+        let inputValue: number;
+        if (!inputString) {
+            inputValue = null;
+        } else {
+            inputValue = parseFloat(inputString);
+            if (isNaN(inputValue)) {
+                inputValue = null;
+            }
+        }
+        // update range selection model if changed
+        let range: ValueRange<number> = this.behavior.scalableRange.getValue();
+        if (rangeValueType === RangeValueType.Start) {
+            if (range.min === inputValue) {
+                return;
+            }
+            range.min = inputValue;
+        }
+        else if (rangeValueType === RangeValueType.End) {
+            if (range.max === inputValue) {
+                return;
+            }
+            range.max = inputValue;
+        }
+
+        if (!supressFilter) {
+            this.behavior.scalableRange.setValue(range);
+            
+            // trigger range change processing
+            this.behavior.updateOnRangeSelectonChange();
+            this.updateInternal(false);
+        }
+    }
+
+    private enterSelection(cellSelection: Selection<any>): void {
+        let settings: Settings = this.settings;
+        
+        let ulItemElement: Selection<any> = cellSelection
+            .selectAll('ul')
+            .data((dataPoint: SampleSlicerDataPoint) => {
+                return [dataPoint];
+            });
+
+        ulItemElement 
+            .exit()
+            .remove();
+
+        let ulItemElementEnter = ulItemElement
+            .enter()
+            .append('ul');
+        
+        ulItemElement = ulItemElement.merge(ulItemElementEnter)
+
+        let listItemElement: Selection<any> = ulItemElement
+            .selectAll(SampleSlicer.ItemContainerSelector.selectorName)
+            .data((dataPoint: SampleSlicerDataPoint) => {
+                return [dataPoint];
+            });
+        
+        listItemElement.exit().remove();
+
+        let listItemElementEnter = listItemElement
+            .enter()
+            .append('li');
+        
+        listItemElement = listItemElement.merge(listItemElementEnter);
+        
+        listItemElement
+            .classed(SampleSlicer.ItemContainerSelector.className, true)
+            .style('margin-left', PixelConverter.toString(settings.slicerItemContainer.marginLeft));
+
+        let slicerTextWrapperSelection: Selection<any> = listItemElement
+            .selectAll(SampleSlicer.SlicerTextWrapperSelector.selectorName)
+            .data((dataPoint: SampleSlicerDataPoint) => {
+                return [dataPoint];
+            });
+        
+        slicerTextWrapperSelection.exit().remove();
+
+        let slicerTextWrapperSelectionEnter = slicerTextWrapperSelection
+            .enter()
+            .append('div')
+            .classed(SampleSlicer.SlicerTextWrapperSelector.className, true);
+        
+        slicerTextWrapperSelection = slicerTextWrapperSelection.merge(slicerTextWrapperSelectionEnter);
+
+        let labelTextSelection: Selection<any> = slicerTextWrapperSelection
+            .selectAll(SampleSlicer.LabelTextSelector.selectorName)
+            .data((dataPoint: SampleSlicerDataPoint) => {
+                return [dataPoint];
+            });
+
+        labelTextSelection.exit().remove();
+        
+        let labelTextSelectionEnter = labelTextSelection
+            .enter()
+            .append('span')
+            .classed(SampleSlicer.LabelTextSelector.className, true);
+        
+        labelTextSelection = labelTextSelection.merge(labelTextSelectionEnter);
+
+        labelTextSelection
+          .style('font-size', PixelConverter.fromPoint(settings.slicerText.textSize));
+
+    }
+
+    private updateSelection(cellSelection: Selection<any>): void {
+        let settings: Settings = this.settings,
+            data: SampleSlicerData = this.slicerData;
+
+        if (data && settings) {
+            //update of rangeSlicer
+            this.updateHeader();
+
+            const slicerText: Selection<any> = cellSelection.selectAll(SampleSlicer.LabelTextSelector.selectorName),
+                textProperties: TextProperties = SampleSlicer.getSampleTextProperties(settings.slicerText.textSize),
+                formatString: string = data.formatString;
+
+            slicerText.text((d: SampleSlicerDataPoint) => {
+                let maxWidth: number = 0;
+
+                textProperties.text = valueFormatter.format(d.category, formatString);
+
+                if (this.settings.slicerText.width === 0) {
+                    let slicerBodyViewport: IViewport = SampleSlicer.getSlicerBodyViewport(this.currentViewport);
+
+                    maxWidth = (slicerBodyViewport.width / (this.tableView.computedColumns || SampleSlicer.MinColumns)) -
+                        SampleSlicer.СhicletTotalInnerRightLeftPaddings -
+                        SampleSlicer.СellTotalInnerBorders;
+                    return textMeasurementService.getTailoredTextOrDefault(textProperties, maxWidth);
+                }
+                else {
+                    maxWidth = this.settings.slicerText.width -
+                        SampleSlicer.СhicletTotalInnerRightLeftPaddings -
+                        SampleSlicer.СellTotalInnerBorders;
+
+                    return textMeasurementService.getTailoredTextOrDefault(textProperties, maxWidth);
+                }
+            });
+
+            cellSelection
+                .style('padding', PixelConverter.toString(settings.slicerText.padding));
+
+            cellSelection.selectAll(SampleSlicer.ItemContainerSelector.selectorName)
+                .style('font-size', PixelConverter.fromPoint(settings.slicerText.textSize));
+
+            if (this.interactivityService && this.slicerBody) {
+                this.interactivityService.applySelectionStateToData(data.slicerDataPoints);
+
+                let slicerBody: Selection<any> = this.slicerBody.attr('width', this.currentViewport.width),
+                    slicerItemContainers: Selection<any> = slicerBody.selectAll(SampleSlicer.ItemContainerSelector.selectorName);
+
+                let behaviorOptions: SampleSlicerBehaviorOptions = {
+                    dataPoints: data.slicerDataPoints,
+                    slicerItemContainers: slicerItemContainers,
+                    interactivityService: this.interactivityService,
+                    slicerSettings: data.slicerSettings,
+                    behavior:  this.behavior,
+                    dataView: <any>this.dataView,
+                    category: this.dataView.categorical.categories[0],
+                    jsonFilters: this.jsonFilters,
+                };
+
+                this.interactivityService.bind(behaviorOptions);
+
+                this.behavior.styleSlicerInputs(
+                    cellSelection.select(SampleSlicer.ItemContainerSelector.selectorName),
+                    this.interactivityService.hasSelection());
+            }
+            else {
+                this.behavior.styleSlicerInputs(cellSelection.select(SampleSlicer.ItemContainerSelector.selectorName), false);
+            }
+        }
+    }
+
+    private getCallbacks(): SampleSlicerCallbacks {
+        let callbacks: SampleSlicerCallbacks = {};
+
+        callbacks.applyFilter = (filter: IFilter): void => {
+          this.visualHost.applyJsonFilter(filter, "general", "filter", FilterAction.merge);
+        };
+
+        callbacks.getFilterColumnTarget = (): IFilterColumnTarget => {
+            return interactivityFilterService.extractFilterColumnTarget(this.dataView.metadata.columns[0]);
+        };
+
+        callbacks.getPersistedSelectionState = (): ISelectionId[] => {
+            try {
+                return JSON.parse(this.slicerData.slicerSettings.general.selection) || [];
+            } catch (ex) {
+                return [];
+            }
+        };
+
+        return callbacks;
     }
 }

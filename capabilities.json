@@ -1,6 +1,6 @@
 {
     "dataRoles": [
-        {
+      {
             "displayName": "Numeric field",
             "name": "Category",
             "kind": "Grouping"
@@ -30,45 +30,39 @@
         }
     ],
     "objects": {
-        "general": {
-            "displayName": "General",
-            "displayNameKey": "formattingGeneral",
-            "properties": {
-                "selection": {
-                    "displayName": "Selection",
-                    "type": {
-                        "text": true
-                    }
-                },
-                "filter": {
-                    "type": {
-                        "filter": true
-                    }
-                },      
-                "selfFilter": {
-                    "type": {
-                        "filter": {
-                            "selfFilter": true
-                        }
-                    }
-                },
-                "rangeSelectionStart": {
-                    "type": {
-                        "text": true
-                    }
-                },
-                "rangeSelectionEnd": {
-                    "type": {
-                        "text": true
-                    }
-                }                                     
-            }
-        }    
-    },
-    "supportsHighlight": true,
-    "suppressDefaultTitle": true,
-    "supportsSynchronizingFilterState": true,
-    "sorting": {
-        "default": {}
+      "general": {
+        "displayName": "General",
+        "properties": {
+        
+          "filter": {
+              "type": {
+                  "filter": true
+              }
+          },
+          "selfFilter": {
+              "type": {
+                  "filter": {
+                      "selfFilter": false
+                  }
+              }
+          },
+          "rangeSelectionStart": {
+              "type": {
+                  "text": true
+              }
+          },
+          "rangeSelectionEnd": {
+              "type": {
+                  "text": true
+              }
+          }
+      }
     }
+  },
+  "supportsHighlight": true,	
+  "suppressDefaultTitle": true,	
+  "supportsSynchronizingFilterState": true,	
+  "sorting": {	
+      "default": {}	
+  }
 }

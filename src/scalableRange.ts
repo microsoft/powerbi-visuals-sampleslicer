@@ -23,76 +23,83 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
+import powerbiVisualsApi from "powerbi-visuals-api";
+import { ScaleLinear, scaleLinear as d3ScaleLinear } from "d3";
 
-module powerbi.extensibility.visual {
+export class ScalableRange {
+    private static readonly TRANSFORMATION_RANGE_MIN = 0;
+    private static readonly TRANSFORMATION_RANGE_MAX = 100;
 
-    export class ScalableRange {
-        private static readonly TRANSFORMATION_RANGE_MIN = 0;
-        private static readonly TRANSFORMATION_RANGE_MAX = 100;
+    private range: powerbiVisualsApi.ValueRange<number>;
+    private scalingTransformationDomain: powerbiVisualsApi.ValueRange<number>;
+    private scalingTransformation: any;
 
-        private range: powerbi.ValueRange<number>;
-        private scalingTransformationDomain: ValueRange<number>;
-        private scalingTransformation: any;
+    constructor() {
+        this.range = {
+            min: null,
+            max: null
+        };
 
-        constructor() {
-            this.range = {
-                min: null,
-                max: null
-            };
+        this.scalingTransformationDomain = {
+            min: null,
+            max: null
+        };
 
-            this.scalingTransformationDomain = {
-                min: null,
-                max: null
-            };
+        this.scalingTransformation = null;
+    }
 
-            this.scalingTransformation = null;
+    public isActive(): boolean {
+        return this.range.min != null || this.range.max != null;
+    }
+
+    public setScalingTransformationDomain(transformationDomain: powerbiVisualsApi.ValueRange<number>): void {
+        this.scalingTransformationDomain = transformationDomain;
+        this.scalingTransformation = d3ScaleLinear()
+            .domain([transformationDomain.min, transformationDomain.max])
+            .range([ScalableRange.TRANSFORMATION_RANGE_MIN, ScalableRange.TRANSFORMATION_RANGE_MAX]);
+    }
+
+    public getScalingTransformationDomain(): powerbiVisualsApi.ValueRange<number> {
+        return this.scalingTransformationDomain;
+    }
+
+    public getScaledValue(): powerbiVisualsApi.ValueRange<number> {
+        return {
+            min: (!this.range || (!this.range.min && this.range.min !== 0) )
+                ? ScalableRange.TRANSFORMATION_RANGE_MIN
+                : this.scalingTransformation(this.saturateDomainValue(this.range.min)),
+            max: (!this.range || (!this.range.max && this.range.max !== 0))
+                ? ScalableRange.TRANSFORMATION_RANGE_MAX 
+                : this.scalingTransformation(this.saturateDomainValue(this.range.max)),
+        };
+    }
+
+    private saturateDomainValue(domainValue: number) {
+        if (domainValue < this.scalingTransformationDomain.min) {
+            return this.scalingTransformationDomain.min;
         }
-
-        public isActive(): boolean {
-            return this.range.min != null || this.range.max != null;
+        if (domainValue > this.scalingTransformationDomain.max) {
+            return this.scalingTransformationDomain.max;
         }
+        return domainValue;
+    }
 
-        public setScalingTransformationDomain(transformationDomain: ValueRange<number>): void {
-            this.scalingTransformationDomain = transformationDomain;
-            this.scalingTransformation = d3.scale.linear()
-                .domain([transformationDomain.min, transformationDomain.max])
-                .range([ScalableRange.TRANSFORMATION_RANGE_MIN, ScalableRange.TRANSFORMATION_RANGE_MAX]);
-        }
+    public setValue(range: powerbiVisualsApi.ValueRange<number>): void {
+        this.range = range;
+    }
 
-        public getScalingTransformationDomain(): ValueRange<number> {
-            return this.scalingTransformationDomain;
-        }
+    public getValue(): powerbiVisualsApi.ValueRange<number> {
+        return this.range;
+    }
 
-        public getScaledValue(): ValueRange<number> {
-            return {
-                min: (!this.range || !this.range.min) ? ScalableRange.TRANSFORMATION_RANGE_MIN : this.scalingTransformation(this.saturateDomainValue(this.range.min)),
-                max: (!this.range || !this.range.max) ? ScalableRange.TRANSFORMATION_RANGE_MAX : this.scalingTransformation(this.saturateDomainValue(this.range.max)),
-            };
-        }
-
-        private saturateDomainValue(domainValue: number) {
-            if (domainValue < this.scalingTransformationDomain.min) {
-                return this.scalingTransformationDomain.min;
-            }
-            if (domainValue > this.scalingTransformationDomain.max) {
-                return this.scalingTransformationDomain.max;
-            }
-            return domainValue;
-        }
-
-        public setValue(range: ValueRange<number>): void {
-            this.range = range;
-        }
-
-        public getValue(): ValueRange<number> {
-            return this.range;
-        }
-
-        public setScaledValue(scaledRange: ValueRange<number>): void {
-            this.range = {
-                min: (scaledRange.min === ScalableRange.TRANSFORMATION_RANGE_MIN) ? (this.range.min < this.scalingTransformationDomain.min ? this.range.min : null) : this.scalingTransformation.invert(scaledRange.min),
-                max: (scaledRange.max === ScalableRange.TRANSFORMATION_RANGE_MAX) ? (this.range.max > this.scalingTransformationDomain.max ? this.range.max : null) : this.scalingTransformation.invert(scaledRange.max)
-            };
-        }
+    public setScaledValue(scaledRange: powerbiVisualsApi.ValueRange<number>): void {
+        this.range = {
+            min: (scaledRange.min === ScalableRange.TRANSFORMATION_RANGE_MIN)
+                ? (this.range.min < this.scalingTransformationDomain.min ? this.range.min : null) 
+                : this.scalingTransformation.invert(scaledRange.min),
+            max: (scaledRange.max === ScalableRange.TRANSFORMATION_RANGE_MAX)
+                ? (this.range.max > this.scalingTransformationDomain.max ? this.range.max : null) 
+                : this.scalingTransformation.invert(scaledRange.max)
+        };
     }
 }
