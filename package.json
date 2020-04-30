@@ -14,7 +14,9 @@
     "start": "pbiviz start",
     "package": "pbiviz package",
     "lint": "tslint -r \"node_modules/tslint-microsoft-contrib\"  \"+(src|test)/**/*.ts\"",
-    "cert": "pbiviz --create-cert"
+    "cert": "pbiviz --create-cert",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "dependencies": {
     "ajv": "^6.10.2",
@@ -30,7 +32,8 @@
     "powerbi-visuals-utils-formattingutils": "^4.4.2",
     "powerbi-visuals-utils-interactivityutils": "^5.6.0",
     "powerbi-visuals-utils-svgutils": "^2.2.1",
-    "powerbi-visuals-utils-typeutils": "^2.2.1"
+    "powerbi-visuals-utils-typeutils": "^2.2.1",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "@types/d3": "^5.7.2",
@@ -45,5 +48,6 @@
     "tslint-microsoft-contrib": "^6.2.0",
     "typescript": "^3.6.3",
     "webpack": "^4.41.2"
-  }
+  },
+  "snyk": true
 }
