@@ -19,7 +19,7 @@
   "dependencies": {
     "ajv": "^6.10.2",
     "core-js": "^3.4.2",
-    "d3": "^5.14.2",
+    "d3": "^7.6.1",
     "eslint": "^6.7.2",
     "lodash.isequal": "^4.5.0",
     "nouislider": "^8.0.2",
@@ -28,8 +28,8 @@
     "powerbi-visuals-utils-colorutils": "^2.1.0",
     "powerbi-visuals-utils-dataviewutils": "^2.2.1",
     "powerbi-visuals-utils-formattingutils": "^4.4.2",
-    "powerbi-visuals-utils-interactivityutils": "^5.6.0",
-    "powerbi-visuals-utils-svgutils": "^2.2.1",
+    "powerbi-visuals-utils-interactivityutils": "^5.7.1",
+    "powerbi-visuals-utils-svgutils": "^2.3.2",
     "powerbi-visuals-utils-typeutils": "^2.2.1"
   },
   "devDependencies": {
